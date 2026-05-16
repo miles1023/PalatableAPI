@@ -1,0 +1,227 @@
+name: DA_StaticItemDataAsset
+asset_path: /Game/Pal/DataAsset/Item/DA_StaticItemDataAsset
+palschema_dir: items/
+description: >
+  Master item definition asset. Defines all static properties for every item in the game.
+  This is a Data Asset (DA_) not a DataTable (DT_) — it uses a TMap internally.
+  Subtypes: UPalStaticArmorItemData, UPalStaticWeaponItemData, UPalStaticConsumeItemData.
+backend: datatables
+discovery_status: confirmed
+game_version_confirmed: "0.7.1"
+row_key_format: "Item StaticId e.g. Stone, IronOre, HandgunBullet_Blank, OldBow"
+notes: >
+  The Type field determines which subclass is used and which subtype-specific fields apply.
+  Name and Description are synthetic — PalSchema writes them to the localization DataTables.
+  Recipe is synthetic — PalSchema writes it to DT_ItemRecipeDataTable.
+  bLegalInGame is stored in DT_ItemDataTable, but PalSchema exposes it here for convenience.
+
+columns:
+  # Common fields (all item types)
+  ID:
+    type: FName
+    plain_english: item_id
+    description: "Internal item identifier — matches row key"
+    notes: "Set automatically from row key"
+
+  Type:
+    type: string
+    plain_english: item_type
+    description: "Broad item category"
+    enum_values: [Armor, Weapon, Consumable, Generic]
+
+  TypeA:
+    type: FName
+    plain_english: item_category_a
+    description: "Primary type classification"
+    enum: EPalItemTypeA
+    enum_values: [None, Weapon, Armor, Consume, Ammo, Material, SpecialWeapon, Glider, MonsterEquipWeapon, Blueprint]
+
+  TypeB:
+    type: FName
+    plain_english: item_category_b
+    description: "Secondary type classification"
+    enum: EPalItemTypeB
+    enum_values: [WeaponMelee, WeaponBow, WeaponHandgun, WeaponAssaultRifle, WeaponShotgun, WeaponRocketLauncher, WeaponCrossbow, WeaponThrowObject, WeaponSniperRifle, ArmorBody, ArmorHead, Shield, Glider, SPWeaponCaptureBall, ConsumeBullet, ConsumeOther, MaterialProccessing, Food, FoodDish, FoodDishVegetable, Essential_UnlockPlayerFuture, Essential_AdditionalInventory]
+
+  Rank:
+    type: int
+    plain_english: rank
+    description: "Item tier/rank affecting stats and unlock requirements"
+
+  Rarity:
+    type: int
+    plain_english: rarity
+    description: "Rarity level affecting UI color and drop rates"
+    range: "1-5 typical"
+
+  Price:
+    type: int
+    plain_english: price
+    description: "Base market price in gold"
+
+  MaxStackCount:
+    type: int
+    plain_english: max_stack
+    description: "Maximum items per inventory slot. 1 = non-stackable."
+    default: 1
+
+  SortID:
+    type: int
+    plain_english: sort_order
+    description: "Sort order within inventory UI"
+
+  Weight:
+    type: float
+    plain_english: weight
+    description: "Weight per item unit — affects carry weight calculation"
+
+  bNotConsumed:
+    type: bool
+    plain_english: not_consumed_on_use
+    description: "If true, item is not removed from inventory when used"
+
+  bLegalInGame:
+    type: bool
+    plain_english: enabled
+    description: "[Via DT_ItemDataTable] Whether this item is obtainable/usable in the game"
+    notes: "Setting to false effectively disables the item"
+
+  # Weapon-specific fields (Type: Weapon)
+  AttackValue:
+    type: int
+    plain_english: attack
+    description: "[Weapon] Base attack damage value"
+    subtype: Weapon
+
+  SneakAttackRate:
+    type: float
+    plain_english: sneak_attack_multiplier
+    description: "[Weapon] Damage multiplier when attacking from stealth"
+    subtype: Weapon
+
+  MagazineSize:
+    type: int
+    plain_english: magazine_size
+    description: "[Weapon] Ammunition capacity per magazine"
+    subtype: Weapon
+
+  Durability:
+    type: float
+    plain_english: durability
+    description: "[Weapon/Armor] Maximum durability"
+    subtype: [Weapon, Armor]
+
+  # Consumable-specific fields (Type: Consumable)
+  RestoreSatiety:
+    type: int
+    plain_english: restore_hunger
+    description: "[Consumable] Hunger restored when consumed"
+    subtype: Consumable
+
+  RestoreHP:
+    type: int
+    plain_english: restore_hp
+    description: "[Consumable] HP restored when consumed"
+    subtype: Consumable
+
+  CorruptionFactor:
+    type: float
+    plain_english: corruption_factor
+    description: "[Consumable] Corruption effect factor"
+    subtype: Consumable
+
+  # Synthetic fields
+  Name:
+    type: string
+    plain_english: display_name
+    description: "[Synthetic] Display name — PalSchema writes to DT_ItemNameText with prefix ITEM_NAME_"
+
+  Description:
+    type: string
+    plain_english: description
+    description: "[Synthetic] Description — PalSchema writes to DT_ItemDescriptionText with prefix ITEM_DESC_"
+
+  Recipe:
+    type: struct
+    plain_english: recipe
+    description: "[Synthetic] Crafting recipe — PalSchema writes to DT_ItemRecipeDataTable"
+    notes: "Fields: Material1_Id, Material1_Count, ... Material5_Id, Material5_Count, WorkAmount, Product_Count"
+
+api_commands:
+  - syntax: "set item {name} price {value}"
+    backend: datatables
+    column: Price
+    returns:
+      success: "Set {name} price to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No item named '{name}' found — check docs/api.md for item names"
+
+  - syntax: "set item {name} max_stack {value}"
+    backend: datatables
+    column: MaxStackCount
+    returns:
+      success: "Set {name} max stack to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No item named '{name}' found"
+
+  - syntax: "set item {name} weight {value}"
+    backend: datatables
+    column: Weight
+    returns:
+      success: "Set {name} weight to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No item named '{name}' found"
+
+  - syntax: "set item {name} enabled {on|off}"
+    backend: datatables
+    column: bLegalInGame
+    returns:
+      success: "Set {name} enabled: {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No item named '{name}' found"
+
+  - syntax: "set weapon {name} attack {value}"
+    backend: datatables
+    column: AttackValue
+    returns:
+      success: "Set {name} attack to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No weapon named '{name}' found"
+
+  - syntax: "set weapon {name} magazine_size {value}"
+    backend: datatables
+    column: MagazineSize
+    returns:
+      success: "Set {name} magazine size to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No weapon named '{name}' found"
+
+  - syntax: "set food {name} restore_hunger {value}"
+    backend: datatables
+    column: RestoreSatiety
+    returns:
+      success: "Set {name} hunger restore to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No food item named '{name}' found"
+
+  - syntax: "set food {name} restore_hp {value}"
+    backend: datatables
+    column: RestoreHP
+    returns:
+      success: "Set {name} HP restore to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No food item named '{name}' found"
+
+todo:
+  - "Build plain-English to StaticId name map for all items (large — needs FModel export)"
+  - "Confirm DA vs DT access path in PalSchema"
+  - "Find armor defense value column (may be in a separate DT)"
+  - "Find ammo capacity column for ammo type items"

@@ -1,0 +1,508 @@
+name: DT_PalMonsterParameter
+asset_path: /Game/Pal/DataTable/Character/DT_PalMonsterParameter
+palschema_dir: pals/
+description: Base stats, AI settings, suitabilities, and all core parameters for every Pal species.
+backend: datatables
+discovery_status: confirmed
+game_version_confirmed: "0.7.1"
+row_key_format: "EPalTribeID value e.g. SheepBall, PinkCat, Anubis — see knowledge/enums/enums.yml for full list"
+notes: >
+  This is the master Pal stat table. Editing a row changes that species globally for all instances.
+  For per-instance changes (a specific Pal in someone's party), use the runtime entity path instead.
+  Synthetic fields (IconAssetPath, BlueprintAssetPath, Name, AbilitiesByLevel, Loot) are
+  PalSchema conveniences — they write to other DataTables automatically when set here.
+
+columns:
+  IsPal:
+    type: bool
+    plain_english: is_pal
+    description: "Whether this entry is a Pal (true) or an NPC human (false)"
+    default: true
+
+  Tribe:
+    type: FName
+    plain_english: tribe
+    description: "Tribe/species identifier — matches the row key"
+    enum: EPalTribeID
+    notes: "See enums.yml for all 157 values"
+
+  ZukanIndex:
+    type: int
+    plain_english: pokedex_number
+    description: "Paldeck entry number"
+
+  ZukanIndexSuffix:
+    type: string
+    plain_english: pokedex_suffix
+    description: "Letter suffix for Paldeck variants (e.g. B for alternate form)"
+
+  Size:
+    type: FName
+    plain_english: size
+    description: "Physical size category affecting capture balls and hitboxes"
+    enum: EPalSizeType
+    enum_values: [None, XS, S, M, L, XL]
+
+  Rarity:
+    type: int
+    plain_english: rarity
+    description: "Rarity tier — affects spawn rate and market price"
+    range: "1-10 typical"
+
+  ElementType1:
+    type: FName
+    plain_english: element_primary
+    description: "Primary elemental type"
+    enum: EPalElementType
+    enum_values: [None, Fire, Water, Leaf, Electricity, Ice, Earth, Dark, Dragon, Normal]
+
+  ElementType2:
+    type: FName
+    plain_english: element_secondary
+    description: "Secondary elemental type. None if single-type."
+    enum: EPalElementType
+    enum_values: [None, Fire, Water, Leaf, Electricity, Ice, Earth, Dark, Dragon, Normal]
+
+  GenusCategory:
+    type: FName
+    plain_english: body_type
+    description: "Body category affecting animations and hitboxes"
+    enum: EPalGenusCategoryType
+    enum_values: [None, Human, Humanoid, FourLegs, FourLegsSmall, TwoLegs, TwoLegsSmall, Other]
+
+  Hp:
+    type: int
+    plain_english: base_hp
+    description: "Base HP stat used to calculate actual HP with level scaling"
+
+  MeleeAttack:
+    type: int
+    plain_english: melee_attack
+    description: "Base melee attack stat"
+
+  ShotAttack:
+    type: int
+    plain_english: ranged_attack
+    description: "Base ranged/shot attack stat"
+
+  Defense:
+    type: int
+    plain_english: defense
+    description: "Base defense stat"
+
+  Support:
+    type: int
+    plain_english: support
+    description: "Base support stat (affects certain partner skills)"
+
+  CraftSpeed:
+    type: int
+    plain_english: craft_speed
+    description: "Base crafting speed when working at a production building"
+
+  EnemyMaxHPRate:
+    type: float
+    plain_english: enemy_hp_multiplier
+    description: "HP multiplier applied when this Pal appears as a wild enemy"
+    default: 1.0
+
+  EnemyReceiveDamageRate:
+    type: float
+    plain_english: enemy_damage_received_multiplier
+    description: "Damage received multiplier when this Pal is a wild enemy"
+    default: 1.0
+
+  EnemyInflictDamageRate:
+    type: float
+    plain_english: enemy_damage_dealt_multiplier
+    description: "Damage dealt multiplier when this Pal is a wild enemy"
+    default: 1.0
+
+  CaptureRateCorrect:
+    type: float
+    plain_english: capture_rate
+    description: "Capture probability multiplier. Higher = easier to catch. 1.0 = normal."
+    default: 1.0
+    range: "0.0 - 10.0 practical"
+
+  ExpRatio:
+    type: float
+    plain_english: exp_yield
+    description: "EXP multiplier when this Pal is defeated"
+    default: 1.0
+
+  Price:
+    type: float
+    plain_english: price
+    description: "Market value — affects shop buy/sell prices"
+
+  StatusResistUpRate:
+    type: float
+    plain_english: status_resist
+    description: "Status effect resistance rate"
+
+  AIResponse:
+    type: FName
+    plain_english: ai_behavior
+    description: "How this Pal responds when it detects a player"
+    enum: EPalAIResponseType
+    enum_values: [Ignore, Escape, Battle, Special]
+
+  AISightResponse:
+    type: FName
+    plain_english: ai_sight_response
+    description: "Sight-specific AI response override"
+
+  SlowWalkSpeed:
+    type: int
+    plain_english: slow_walk_speed
+    description: "Movement speed when walking slowly (patrolling, idle)"
+
+  WalkSpeed:
+    type: int
+    plain_english: walk_speed
+    description: "Normal walk speed"
+
+  RunSpeed:
+    type: int
+    plain_english: run_speed
+    description: "Run/sprint speed"
+
+  RideSprintSpeed:
+    type: int
+    plain_english: mount_sprint_speed
+    description: "Sprint speed when player is riding this Pal"
+
+  TransportSpeed:
+    type: int
+    plain_english: transport_speed
+    description: "Speed when carrying items between base buildings"
+
+  IsBoss:
+    type: bool
+    plain_english: is_boss
+    description: "Whether this is a boss-tier Pal with boss HP bar"
+
+  IsTowerBoss:
+    type: bool
+    plain_english: is_tower_boss
+    description: "Whether this is a tower boss (main story bosses)"
+
+  IsRaidBoss:
+    type: bool
+    plain_english: is_raid_boss
+    description: "Whether this appears as a raid boss"
+
+  UseBossHPGauge:
+    type: bool
+    plain_english: show_boss_hp_bar
+    description: "Whether to show the dedicated boss HP gauge UI"
+
+  BattleBGM:
+    type: FName
+    plain_english: battle_music
+    description: "Background music track played when fighting this Pal"
+    enum: EPalBattleBGMType
+    enum_values: [None, Normal, RaidBoss, TowerBoss, FieldBoss, BossField, Dungeon, Combat, Trace]
+
+  IgnoreLeanBack:
+    type: bool
+    plain_english: ignore_knockback_lean
+    description: "Whether this Pal ignores lean-back animation on hit"
+
+  IgnoreBlowAway:
+    type: bool
+    plain_english: ignore_knockback_launch
+    description: "Whether this Pal ignores blow-away (launch) knockback"
+
+  MaxFullStomach:
+    type: int
+    plain_english: max_hunger
+    description: "Maximum hunger/stomach capacity for this Pal species"
+
+  FullStomachDecreaseRate:
+    type: float
+    plain_english: hunger_decay_rate
+    description: "Rate at which hunger decreases over time"
+    default: 1.0
+
+  FoodAmount:
+    type: int
+    plain_english: food_amount
+    description: "How much food this Pal provides when eaten (if edible)"
+
+  ViewingDistance:
+    type: int
+    plain_english: sight_range
+    description: "Detection radius in UU (Unreal Units)"
+
+  ViewingAngle:
+    type: int
+    plain_english: sight_angle
+    description: "Detection cone angle in degrees"
+
+  HearingRate:
+    type: float
+    plain_english: hearing_rate
+    description: "Hearing sensitivity multiplier"
+
+  NooseTrap:
+    type: bool
+    plain_english: can_noose_trap
+    description: "Whether this Pal can be caught with a noose trap"
+
+  Nocturnal:
+    type: bool
+    plain_english: nocturnal
+    description: "Whether this Pal is primarily active at night"
+
+  BiologicalGrade:
+    type: int
+    plain_english: biological_grade
+    description: "Biological classification grade (affects certain systems)"
+
+  Predator:
+    type: bool
+    plain_english: is_predator
+    description: "Whether this Pal actively hunts other Pals"
+
+  Edible:
+    type: bool
+    plain_english: is_edible
+    description: "Whether this Pal can be consumed as food"
+
+  Stamina:
+    type: int
+    plain_english: stamina
+    description: "Base stamina stat"
+
+  MaleProbability:
+    type: int
+    plain_english: male_probability
+    description: "Probability (0-100) of spawning as male"
+    range: "0-100"
+
+  CombiRank:
+    type: int
+    plain_english: breeding_rank
+    description: "Rank used in the breeding combination formula"
+
+  WorkSuitability_EmitFlame:
+    type: int
+    plain_english: work_fire
+    description: "Kindling suitability level (0=none, max=4)"
+    range: "0-4"
+
+  WorkSuitability_Watering:
+    type: int
+    plain_english: work_watering
+    description: "Watering suitability level"
+    range: "0-4"
+
+  WorkSuitability_Seeding:
+    type: int
+    plain_english: work_planting
+    description: "Planting suitability level"
+    range: "0-4"
+
+  WorkSuitability_GenerateElectricity:
+    type: int
+    plain_english: work_electricity
+    description: "Electricity generation suitability level"
+    range: "0-4"
+
+  WorkSuitability_Handcraft:
+    type: int
+    plain_english: work_crafting
+    description: "Handiwork/crafting suitability level"
+    range: "0-4"
+
+  WorkSuitability_Collection:
+    type: int
+    plain_english: work_gathering
+    description: "Gathering suitability level"
+    range: "0-4"
+
+  WorkSuitability_Deforest:
+    type: int
+    plain_english: work_lumbering
+    description: "Lumbering suitability level"
+    range: "0-4"
+
+  WorkSuitability_Mining:
+    type: int
+    plain_english: work_mining
+    description: "Mining suitability level"
+    range: "0-4"
+
+  WorkSuitability_OilExtraction:
+    type: int
+    plain_english: work_oil
+    description: "Oil extraction suitability level"
+    range: "0-4"
+
+  WorkSuitability_ProductMedicine:
+    type: int
+    plain_english: work_medicine
+    description: "Medicine production suitability level"
+    range: "0-4"
+
+  WorkSuitability_Cool:
+    type: int
+    plain_english: work_cooling
+    description: "Cooling suitability level"
+    range: "0-4"
+
+  WorkSuitability_Transport:
+    type: int
+    plain_english: work_transport
+    description: "Transporting suitability level"
+    range: "0-4"
+
+  WorkSuitability_MonsterFarm:
+    type: int
+    plain_english: work_farming
+    description: "Pal farming suitability level"
+    range: "0-4"
+
+  PassiveSkill1:
+    type: FName
+    plain_english: passive_skill_1
+    description: "First default passive skill"
+
+  PassiveSkill2:
+    type: FName
+    plain_english: passive_skill_2
+    description: "Second default passive skill"
+
+  PassiveSkill3:
+    type: FName
+    plain_english: passive_skill_3
+    description: "Third default passive skill"
+
+  PassiveSkill4:
+    type: FName
+    plain_english: passive_skill_4
+    description: "Fourth default passive skill"
+
+  # Synthetic fields — PalSchema maps these to other DataTables automatically
+  Name:
+    type: string
+    plain_english: display_name
+    description: "[Synthetic] Display name — PalSchema writes to DT_PalNameText with prefix PAL_NAME_"
+    notes: "PalSchema handles the cross-table write. You set this here."
+
+  ShortDescription:
+    type: string
+    plain_english: short_description
+    description: "[Synthetic] Short description — PalSchema writes to DT_PalShortDescriptionText"
+
+  LongDescription:
+    type: string
+    plain_english: description
+    description: "[Synthetic] Long description — PalSchema writes to DT_PalLongDescriptionText"
+
+  AbilitiesByLevel:
+    type: array
+    plain_english: abilities
+    description: "[Synthetic] Abilities learned at each level — PalSchema writes to DT_WazaMasterLevel"
+    notes: "Array of {WazaID: FName, Level: int}"
+
+  Loot:
+    type: array
+    plain_english: loot_table
+    description: "[Synthetic] Drop table — PalSchema writes to DT_PalDropItem"
+    notes: "Array of {ItemId: FName, DropChance: float (0-100), Min: int, Max: int}"
+
+api_commands:
+  - syntax: "set pal-species {name} capture_rate {value}"
+    backend: datatables
+    column: CaptureRateCorrect
+    returns:
+      success: "Set {name} capture rate to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No Pal species named '{name}' found — check docs/api.md for species names"
+
+  - syntax: "set pal-species {name} base_hp {value}"
+    backend: datatables
+    column: Hp
+    returns:
+      success: "Set {name} base HP to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No Pal species named '{name}' found"
+
+  - syntax: "set pal-species {name} melee_attack {value}"
+    backend: datatables
+    column: MeleeAttack
+    returns:
+      success: "Set {name} melee attack to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No Pal species named '{name}' found"
+
+  - syntax: "set pal-species {name} defense {value}"
+    backend: datatables
+    column: Defense
+    returns:
+      success: "Set {name} defense to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No Pal species named '{name}' found"
+
+  - syntax: "set pal-species {name} run_speed {value}"
+    backend: datatables
+    column: RunSpeed
+    returns:
+      success: "Set {name} run speed to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No Pal species named '{name}' found"
+
+  - syntax: "set pal-species {name} mount_speed {value}"
+    backend: datatables
+    column: RideSprintSpeed
+    returns:
+      success: "Set {name} mount sprint speed to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No Pal species named '{name}' found"
+
+  - syntax: "set pal-species {name} work {work_type} {level}"
+    backend: datatables
+    notes: "work_type maps to WorkSuitability_* column. level is 0-4."
+    returns:
+      success: "Set {name} {work_type} work level to {level}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No Pal species named '{name}' found"
+        - code: VALUE_OUT_OF_RANGE
+          message: "Work level must be 0-4"
+
+  - syntax: "set pal-species {name} nocturnal {on|off}"
+    backend: datatables
+    column: Nocturnal
+    returns:
+      success: "Set {name} nocturnal to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No Pal species named '{name}' found"
+
+  - syntax: "set pal-species {name} ai_behavior {value}"
+    backend: datatables
+    column: AIResponse
+    notes: "value must be one of: ignore, escape, battle, special"
+    returns:
+      success: "Set {name} AI behavior to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No Pal species named '{name}' found"
+        - code: VALUE_OUT_OF_RANGE
+          message: "AI behavior must be: ignore, escape, battle, or special"
+
+todo:
+  - "Map all EPalTribeID values to plain-English Pal names (e.g. SheepBall = Lamball)"
+  - "Confirm asset path is correct for current version"
+  - "Find GlobalPalGrowthParam table that contains level scaling curves"
+  - "Determine if CaptureRateCorrect is a multiplier or absolute value"

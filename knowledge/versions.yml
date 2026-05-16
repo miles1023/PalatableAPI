@@ -1,0 +1,36 @@
+# Game version history — track breaking changes and Mappings.usmap hashes
+# Mappings.usmap is maintained by the community at:
+# https://github.com/PalworldModding/UsefulFiles/blob/master/Mappings.usmap
+
+versions:
+  - version: "0.7.1"
+    release_date: "2025-12-19"
+    ue_version: "5.1.1"
+    binaries:
+      client: "Palworld-Win64-Shipping.exe"
+      server: "PalServer-Win64-Shipping-Server.exe"
+    breaking_changes:
+      - "Pak installation location changed — mods must go back to /Pal/Content/Paks/"
+      - "New UE4SS version required (Okaetsu fork updated 2026-01-17)"
+      - "PalSchema pak redirector broke — workaround is manual pak placement"
+    status: verified
+    mappings_usmap_hash: null
+    notes: "Last verified version as of workspace creation 2026-05-15"
+
+  - version: "1.0"
+    release_date: "2026-TBD"
+    ue_version: "5.1.1 (unconfirmed)"
+    binaries:
+      client: "Palworld-Win64-Shipping.exe"
+      server: "PalServer-Win64-Shipping-Server.exe"
+    breaking_changes: []
+    status: upcoming
+    notes: >
+      Labeled 'Top Secret' by Pocketpair. Expected to be a major update — assume all
+      hardcoded addresses will change. Byte signatures should survive if code is not
+      recompiled from scratch. DataTable column names are less likely to change than addresses.
+
+todo:
+  - "Add Mappings.usmap SHA256 hash for each version when obtained"
+  - "Track UE4SS Okaetsu fork release that supports each game version"
+  - "Add binary file hashes (SHA256) for client and server exe per version"

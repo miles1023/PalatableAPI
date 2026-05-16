@@ -1,0 +1,174 @@
+name: UPalIndividualCharacterParameter
+parent: UObject
+ue_module: /Script/Pal
+discovery_status: confirmed
+game_version_confirmed: "0.7.1"
+notes: >
+  Holds the live save-compatible stat values for a character.
+  Accessed via UPalCharacterParameterComponent.IndividualParameter.
+  HP and MP use FFixedPoint type — read/write via the .Value sub-field (float).
+  These are the values written to save files; changes here are semi-persistent
+  across the session but reset on game restart unless save is triggered.
+
+properties:
+  hp:
+    access: reflected
+    ue_property: Hp
+    type: FFixedPoint
+    plain_english: health
+    authority: server
+    lifecycle: [any]
+    writable: true
+    persistence: session
+    side_effects: "Must be <= MaxHP.Value or game will clamp. Set MaxHP first if raising above default."
+    notes: "Read/write the inner .Value field (float). e.g. Hp.Value = 500.0"
+
+  max_hp:
+    access: reflected
+    ue_property: MaxHP
+    type: FFixedPoint
+    plain_english: max_health
+    authority: server
+    lifecycle: [any]
+    writable: true
+    persistence: session
+    notes: "Set this before setting Hp if you want to raise HP above the default cap"
+
+  mp:
+    access: reflected
+    ue_property: MP
+    type: FFixedPoint
+    plain_english: mp
+    authority: server
+    lifecycle: [any]
+    writable: true
+    persistence: session
+
+  max_mp:
+    access: reflected
+    ue_property: MaxMP
+    type: FFixedPoint
+    plain_english: max_mp
+    authority: server
+    lifecycle: [any]
+    writable: true
+    persistence: session
+
+  hunger:
+    access: reflected
+    ue_property: FullStomach
+    type: float
+    plain_english: hunger
+    authority: server
+    lifecycle: [any]
+    writable: true
+    persistence: session
+    side_effects: "Must be <= MaxFullStomach. 0 = starving, MaxFullStomach = full."
+    notes: "Despite the name FullStomach, higher value = MORE food. Not inverted."
+
+  max_hunger:
+    access: reflected
+    ue_property: MaxFullStomach
+    type: float
+    plain_english: max_hunger
+    authority: server
+    lifecycle: [any]
+    writable: true
+    persistence: session
+
+  sanity:
+    access: reflected
+    ue_property: SanityValue
+    type: float
+    plain_english: sanity
+    authority: server
+    lifecycle: [any]
+    writable: true
+    persistence: session
+    side_effects: "Low sanity triggers debuffs. Range is 0.0 to 100.0."
+
+  physical_health:
+    access: reflected
+    ue_property: PhysicalHealth
+    type: EPalStatusPhysicalHealthType
+    plain_english: physical_status
+    authority: server
+    lifecycle: [any]
+    writable: true
+    persistence: session
+    notes: "Enum — values TBD from UHT dump"
+
+  hunger_type:
+    access: reflected
+    ue_property: HungerType
+    type: EPalStatusHungerType
+    plain_english: hunger_status
+    authority: server
+    lifecycle: [any]
+    writable: true
+    persistence: session
+    notes: "Enum — values TBD from UHT dump"
+
+api_commands:
+  - syntax: "set player {name} health {value}"
+    backend: runtime
+    notes: "Writes to Hp.Value. Clamps to MaxHP.Value automatically."
+    returns:
+      success: "Player {name} health set to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+        - code: VALUE_OUT_OF_RANGE
+          message: "Health must be between 0 and max health"
+
+  - syntax: "set player {name} max_health {value}"
+    backend: runtime
+    returns:
+      success: "Player {name} max health set to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+
+  - syntax: "set player {name} hunger {value}"
+    backend: runtime
+    returns:
+      success: "Player {name} hunger set to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+
+  - syntax: "set player {name} hunger infinite"
+    backend: runtime
+    notes: "Sets hunger to MaxFullStomach value"
+    returns:
+      success: "Player {name} hunger set to max"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+
+  - syntax: "set player {name} sanity {value}"
+    backend: runtime
+    returns:
+      success: "Player {name} sanity set to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+        - code: VALUE_OUT_OF_RANGE
+          message: "Sanity must be between 0 and 100"
+
+  - syntax: "set pal {name} health {value}"
+    backend: runtime
+    notes: "Same component chain applies to Pals as players"
+    returns:
+      success: "Pal {name} health set to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No Pal named '{name}' is currently spawned in the world"
+        - code: LIFECYCLE_MISMATCH
+          message: "'{name}' is in a Pal Box — call it out before modifying"
+
+todo:
+  - "Confirm FFixedPoint inner field name is .Value (not .RawValue or similar)"
+  - "Find EPalStatusPhysicalHealthType enum values"
+  - "Find EPalStatusHungerType enum values"
+  - "Confirm SanityValue range 0-100"

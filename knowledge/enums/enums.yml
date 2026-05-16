@@ -1,0 +1,221 @@
+# Palworld Enum Reference
+# Source: DRayX CXX Header Gist + PalSchema source + NightFyre Palworld-Internal SDK
+# Game version: 0.7.1
+
+EPalElementType:
+  values: [None, Fire, Water, Leaf, Electricity, Ice, Earth, Dark, Dragon, Normal, MAX]
+  used_in: [DT_PalMonsterParameter.ElementType1, DT_PalMonsterParameter.ElementType2, DT_WazaDataTable.WazaType]
+
+EPalSizeType:
+  values: [None, XS, S, M, L, XL]
+  used_in: [DT_PalMonsterParameter.Size]
+
+EPalGenusCategoryType:
+  values: [None, Human, Humanoid, FourLegs, FourLegsSmall, TwoLegs, TwoLegsSmall, Other]
+  used_in: [DT_PalMonsterParameter.GenusCategory]
+
+EPalOrganizationType:
+  values: [None, Guild, Police, City, Brigade, TeamBlackHunter, TeamFireCult, TeamWelfareGroup, MAX]
+  used_in: [DT_PalMonsterParameter.Organization]
+
+EPalBattleBGMType:
+  values: [None, Normal, RaidBoss, TowerBoss, FieldBoss, BossField, Dungeon, Combat, Trace]
+  used_in: [DT_PalMonsterParameter.BattleBGM]
+
+EPalAIResponseType:
+  values: [Ignore, Escape, Battle, Special]
+  used_in: [DT_PalMonsterParameter.AIResponse]
+
+EPalGenderType:
+  values: [None, Male, Female]
+  used_in: [various]
+
+EPalWorkSuitability:
+  values:
+    - None
+    - EmitFlame       # Kindling
+    - Watering        # Watering
+    - Seeding         # Planting
+    - GenerateElectricity # Electricity
+    - Handcraft       # Handiwork
+    - Collection      # Gathering
+    - Deforest        # Lumbering
+    - Mining          # Mining
+    - OilExtraction   # Oil Extraction
+    - ProductMedicine # Medicine Production
+    - Cool            # Cooling
+    - Transport       # Transporting
+    - MonsterFarm     # Farming
+    - MAX
+  plain_english_map:
+    EmitFlame: fire
+    Watering: watering
+    Seeding: planting
+    GenerateElectricity: electricity
+    Handcraft: crafting
+    Collection: gathering
+    Deforest: lumbering
+    Mining: mining
+    OilExtraction: oil
+    ProductMedicine: medicine
+    Cool: cooling
+    Transport: transport
+    MonsterFarm: farming
+  used_in: [DT_PalMonsterParameter.WorkSuitability_*, DT_BuildObjectDataTable.Assignments]
+
+EPalItemTypeA:
+  values: [None, Weapon, Armor, Consume, Ammo, Material, SpecialWeapon, Glider, MonsterEquipWeapon, Blueprint]
+  used_in: [DA_StaticItemDataAsset.TypeA]
+
+EPalItemTypeB:
+  values:
+    - None
+    - WeaponMelee
+    - WeaponBow
+    - WeaponHandgun
+    - WeaponAssaultRifle
+    - WeaponShotgun
+    - WeaponRocketLauncher
+    - WeaponCrossbow
+    - WeaponSniperRifle
+    - WeaponThrowObject
+    - ArmorBody
+    - ArmorHead
+    - Shield
+    - Glider
+    - SPWeaponCaptureBall
+    - ConsumeBullet
+    - ConsumeOther
+    - MaterialProccessing
+    - Food
+    - FoodDish
+    - FoodDishVegetable
+    - Essential_UnlockPlayerFuture
+    - Essential_AdditionalInventory
+  used_in: [DA_StaticItemDataAsset.TypeB]
+
+EPalBuildObjectTypeA:
+  values: [Product, ProductPal, ProductFarm, ProductFarmCrop, Mining, MiningRock, Energy, Breeding, Defense, Dismantle]
+  used_in: [DT_BuildObjectDataTable.TypeA]
+
+EPalBuildObjectTypeB:
+  values: [Prod_Craft, Prod_Pal, Prod_PalEgg, Prod_Farm, Prod_FarmCrop, Prod_Mine, Prod_Mine_Rock, Prod_Energy, Prod_Breed, Defense_Turret, Defense_Wall, Defense_Gate, Defense_Misc, Found_Ground, Found_Ceiling, Found_Wall, Found_House]
+  used_in: [DT_BuildObjectDataTable.TypeB]
+
+EPalChatCategory:
+  values: [None, Global, Guild, Say]
+  used_in: [hooks.broadcast_chat]
+
+EPalMapObjectTreasureGradeType:
+  values: [Grade1, Grade2, Grade3, Grade4, Grade5, Grade6]
+  used_in: [DT_ItemLotteryDataTable]
+
+EPalStatusID:
+  values:
+    - None
+    - Stun
+    - Sleep
+    - Poison
+    - Burn
+    - Wetness
+    - Freeze
+    - Electrical
+    - Muddy
+    - IvyCling
+    - Darkness
+    - AttackUp
+    - DefenseUp
+    - Recovery
+    - Trap_LegHold
+    - LifeSteal
+  used_in: [various status effect systems]
+
+EPalSpawnerPlacementType:
+  values: [FieldBoss]
+  notes: "Only FieldBoss confirmed. Other values TBD."
+  used_in: [spawner JSON SpawnerType field]
+
+EPalItemShopProductType:
+  values: [Normal]
+  notes: "Only Normal confirmed. Other values TBD."
+  used_in: [DT_ItemShopCreateData.ProductType]
+
+# EPalTribeID — all 157+ Pal species internal identifiers
+# Format: InternalID -> PlainEnglishName
+EPalTribeID:
+  plain_english_map:
+    PinkCat: Cattiva
+    SheepBall: Lamball
+    ChickenPal: Chikipi
+    Kitsunebi: Foxparks
+    ColorfulBird: Tocotoco
+    Penguin: Penking
+    Deer: Eikthyrdeer
+    Carbunclo: Lifmunk
+    NegativeKoala: Depresso
+    PlantSlime: Tanzee
+    FlowerDinosaur: Broncherry
+    ElecPanda: Univolt
+    IceDrake: Sweepa
+    LazyCatfish: Fuddler
+    Baphomet: Incineram
+    MopRabbit: Mossanda
+    Serpent: Surfent
+    WizardOwl: Daedream
+    BlueDragon: Quivern
+    ElecKirin: Rayhound
+    FlameOrm: Flambelle
+    GrassMammoth: Mammorest
+    Alpaca: Melpaca
+    Anubis: Anubis
+    GrassPanda: Mossanda
+    Kelpie: Direhowl
+    RedArmorBird: Vanwyrm
+    IceHorse: Frostallion
+    Mutant: Shadowbeak
+    GoldSlime: Kingpaca
+    MushroomDragon: Lyleen
+    PlantFox: Verdash
+    WeaselDragon: Chillet
+    FlyingManta: Astegon
+    Baphomet_Dark: Incineram Noct
+    Kelpie_Ice: Ice Kingpaca
+    Alpaca_Electric: Elphidran
+    LizardMan: Azurobe
+    DarkCrow: Cawgnito
+    PinkLizard: Galeclaw
+    RockDragon: Reptyro
+    PoisonMushroom: Vixel
+    GoldenHorse: Paladius
+    BlackMetalDragon: Necromus
+    VolcanoDragon: Jormuntide Ignis
+    Grassbird: Grintale
+    NightFox: Nox
+    Gorilla: Gorirat
+    NightOwl: Killamari
+    NightLady: Katress
+    Falcon: Ragnahawk
+    Plesiosaur: Petallia
+    DragonCopter: Helzephyr
+    FireKirin: Blazehowl
+    PinkLion: Lovander
+    FireDeer: Blazehowl Noct
+    ThunderDragon: Orserk
+    FlowerDog: Ribbuny
+    MoonQueen: Lyleen Noct
+    BluePlatypus: Relaxaurus
+    PoisonBlob: Digtoise
+    FlameBison: Blazamut
+    ElecEagle: Beegarde
+    SharkKid: Dumud
+    NightCrow: Tombat
+    JetDragon: Jetragon
+    GrassBear: Warsect
+    LizardBird: Cinnamoth
+    FireCat: Pyrin
+    AquaLion: Jormuntide
+    IceWolf: Cryolinx
+    Bone: Skeletal variants
+  notes: "Partial list. Full list has 157+ entries. Key not found above = internal name is the plain name."
+  todo:
+    - "Complete the full EPalTribeID to plain-English mapping via FModel or PalSchema examples"

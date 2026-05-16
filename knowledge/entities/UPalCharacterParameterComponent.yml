@@ -1,0 +1,82 @@
+name: UPalCharacterParameterComponent
+parent: UActorComponent
+ue_module: /Script/Pal
+discovery_status: confirmed
+game_version_confirmed: "0.7.1"
+notes: >
+  Attached to both APalPlayerCharacter and APalCharacter.
+  The gateway to all vital stats: HP, MP, hunger, sanity.
+  Has two sub-objects:
+    IndividualParameter (UPalIndividualCharacterParameter) — the actual stat values
+    bIsEnableMuteki — invincibility flag lives directly on this component.
+  Access via character.CharacterParameterComponent.
+
+properties:
+  individual_parameter:
+    access: reflected
+    ue_property: IndividualParameter
+    type: UPalIndividualCharacterParameter*
+    plain_english: individual_stats
+    authority: server
+    lifecycle: [any]
+    writable: false
+    notes: "Contains Hp, MaxHP, MP, FullStomach, SanityValue. See UPalIndividualCharacterParameter.yml"
+
+  invincible:
+    access: reflected
+    ue_property: bIsEnableMuteki
+    type: bool
+    plain_english: invincible
+    authority: server
+    lifecycle: [spawned]
+    writable: true
+    persistence: session
+    side_effects: "Player takes no damage while true. Server-authoritative."
+
+functions:
+  get_max_hp:
+    ue_function_path: "/Script/Pal.PalCharacterParameterComponent:GetMaxHP"
+    hook_type: post
+    authority: either
+    lifecycle: [spawned]
+    returns: FFixedPoint64
+
+  is_dying:
+    ue_function_path: "/Script/Pal.PalCharacterParameterComponent:IsDying"
+    hook_type: post
+    authority: either
+    lifecycle: [spawned]
+    returns: bool
+
+  revive_from_dying:
+    ue_function_path: "/Script/Pal.PalCharacterParameterComponent:ReviveFromDying"
+    hook_type: pre
+    authority: server
+    lifecycle: [spawned]
+    notes: "Revives a character that is in the dying state"
+
+api_commands:
+  - syntax: "set player {name} invincible {on|off}"
+    backend: runtime
+    notes: "Directly sets bIsEnableMuteki on the component"
+    returns:
+      success: "Player {name} invincibility: {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+
+  - syntax: "revive player {name}"
+    backend: runtime
+    notes: "Calls ReviveFromDying if IsDying() is true"
+    returns:
+      success: "Revived {name}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+        - code: VALUE_OUT_OF_RANGE
+          message: "{name} is not in a dying state"
+
+todo:
+  - "Confirm IndividualParameter vs IndividualHandle — SDK shows both, clarify which holds live values"
+  - "Find SanityValue path (may be on IndividualParameter or on a separate component)"
+  - "Find CraftSpeed equivalent for player"

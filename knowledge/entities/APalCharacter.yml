@@ -1,0 +1,37 @@
+name: APalCharacter
+parent: APawn
+ue_module: /Script/Pal
+discovery_status: partial
+game_version_confirmed: "0.7.1"
+notes: >
+  Base class for all Pal actors in the world. Pals in a Pal Box or stored are NOT
+  represented as live APalCharacter instances — they exist as save data only.
+  Only use this class for Pals that are currently spawned in the world.
+
+properties:
+  character_parameter_component:
+    access: reflected
+    ue_property: CharacterParameterComponent
+    type: UPalCharacterParameterComponent*
+    plain_english: stats
+    authority: server
+    lifecycle: [spawned]
+    writable: false
+    notes: "Gateway to HP, MP, hunger, sanity. See UPalCharacterParameterComponent.yml"
+
+functions:
+  on_trigger_interact:
+    ue_function_path: "/Script/Pal.PalMapObjectConcreteModelBase:OnTriggerInteract"
+    hook_type: pre
+    authority: server
+    lifecycle: [spawned]
+    notes: "Fires when a player interacts with any world object including Pals"
+
+todo:
+  - "Confirm CharacterParameterComponent property name via UHT dump"
+  - "Find OtomoComponent property (companion Pal component)"
+  - "Find tribe ID / species identifier property"
+  - "Find individual character handle (links to save data / individual parameters)"
+  - "Find passive skill array property"
+  - "Find current level property"
+  - "Find current EXP property"

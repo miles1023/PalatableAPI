@@ -1,0 +1,104 @@
+name: DT_ItemRecipeDataTable
+asset_path: /Game/Pal/DataTable/Item/DT_ItemRecipeDataTable
+palschema_dir: items/ (via Recipe synthetic field)
+description: Crafting recipes for all craftable items. Up to 5 ingredients per recipe.
+backend: datatables
+discovery_status: confirmed
+game_version_confirmed: "0.7.1"
+row_key_format: "Item StaticId — same as the product item's internal name (e.g. IronIngot, HandgunBullet_Blank)"
+notes: >
+  Best edited via the synthetic Recipe field in DA_StaticItemDataAsset.yml when using PalSchema.
+  Product_Id is set automatically from the row key — do not set it manually.
+
+columns:
+  Product_Id:
+    type: FName
+    plain_english: product_item
+    description: "Output item ID — set automatically from row key, do not override"
+    notes: "Set by PalSchema from the row key. Never set manually."
+
+  Product_Count:
+    type: int
+    plain_english: product_amount
+    description: "Number of items produced per craft"
+    default: 1
+
+  WorkAmount:
+    type: float
+    plain_english: craft_time
+    description: "Amount of work required to craft (affects time based on CraftSpeed)"
+
+  Material1_Id:
+    type: FName
+    plain_english: ingredient_1
+    description: "First ingredient item ID"
+
+  Material1_Count:
+    type: int
+    plain_english: ingredient_1_amount
+    description: "Quantity of first ingredient required"
+
+  Material2_Id:
+    type: FName
+    plain_english: ingredient_2
+    description: "Second ingredient item ID (empty = not required)"
+
+  Material2_Count:
+    type: int
+    plain_english: ingredient_2_amount
+
+  Material3_Id:
+    type: FName
+    plain_english: ingredient_3
+
+  Material3_Count:
+    type: int
+    plain_english: ingredient_3_amount
+
+  Material4_Id:
+    type: FName
+    plain_english: ingredient_4
+
+  Material4_Count:
+    type: int
+    plain_english: ingredient_4_amount
+
+  Material5_Id:
+    type: FName
+    plain_english: ingredient_5
+
+  Material5_Count:
+    type: int
+    plain_english: ingredient_5_amount
+
+api_commands:
+  - syntax: "set item {name} recipe ingredient {slot} {item} {amount}"
+    backend: datatables
+    notes: "slot is 1-5"
+    returns:
+      success: "Set {name} recipe ingredient {slot} to {amount}x {item}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No item named '{name}' found"
+
+  - syntax: "set item {name} recipe output {amount}"
+    backend: datatables
+    column: Product_Count
+    returns:
+      success: "Set {name} recipe output to {amount}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No item named '{name}' found"
+
+  - syntax: "set item {name} craft_time {value}"
+    backend: datatables
+    column: WorkAmount
+    returns:
+      success: "Set {name} craft time to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No item named '{name}' found"
+
+todo:
+  - "Map common Material FNames to plain-English item names"
+  - "Confirm WorkAmount units and how it interacts with Pal CraftSpeed"

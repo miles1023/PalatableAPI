@@ -1,0 +1,59 @@
+name: UPalItemSlot
+parent: UObject
+ue_module: /Script/Pal
+discovery_status: confirmed
+game_version_confirmed: "0.7.1"
+notes: >
+  A single item slot in an inventory container.
+  Accessed via UPalItemContainer.ItemSlotArray[index].
+  ItemId.StaticId holds the item's FName identifier (e.g. 'Stone', 'IronOre').
+  Writing StackCount directly is not recommended — use RequestAddItem on inventory instead.
+
+properties:
+  item_id:
+    access: reflected
+    ue_property: ItemId
+    type: FPalItemId
+    plain_english: item_id_struct
+    authority: server
+    lifecycle: [spawned]
+    writable: false
+    notes: "Struct containing StaticId (FName). Access via ItemId.StaticId for the item name."
+
+  stack_count:
+    access: reflected
+    ue_property: StackCount
+    type: int
+    plain_english: stack_count
+    authority: server
+    lifecycle: [spawned]
+    writable: true
+    persistence: session
+    side_effects: "Writing directly bypasses server validation. Prefer RequestAddItem."
+
+functions:
+  get_item_id:
+    ue_function_path: "/Script/Pal.PalItemSlot:GetItemId"
+    hook_type: post
+    authority: either
+    lifecycle: [spawned]
+    returns: FPalItemId
+
+  get_stack_count:
+    ue_function_path: "/Script/Pal.PalItemSlot:GetStackCount"
+    hook_type: post
+    authority: either
+    lifecycle: [spawned]
+    returns: int
+
+  is_empty:
+    ue_function_path: "/Script/Pal.PalItemSlot:IsEmpty"
+    hook_type: post
+    authority: either
+    lifecycle: [spawned]
+    returns: bool
+
+todo:
+  - "Confirm FPalItemId.StaticId field name via UHT dump"
+  - "Find durability field for equipment slots (may live on dynamic item data, not the slot)"
+  - "Find slot lock / bound status flag"

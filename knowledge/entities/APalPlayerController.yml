@@ -1,0 +1,107 @@
+name: APalPlayerController
+parent: APlayerController
+ue_module: /Script/Pal
+discovery_status: partial
+game_version_confirmed: "0.7.1"
+notes: >
+  Obtained via APalPlayerCharacter:GetPalPlayerController().
+  Also accessible as PlayerController in UE4SS Lua via FindFirstOf("PalPlayerController").
+  Holds the Transmitter (network relay) and project/screen utilities.
+
+properties:
+  player_state:
+    access: reflected
+    ue_property: PlayerState
+    type: APalPlayerState*
+    plain_english: player_state
+    authority: server
+    lifecycle: [spawned]
+    writable: false
+    notes: "Cast to APalPlayerState for inventory and respawn access"
+
+  transmitter:
+    access: reflected
+    ue_property: Transmitter
+    type: APalNetworkTransmitter*
+    plain_english: network_transmitter
+    authority: server
+    lifecycle: [spawned]
+    writable: false
+
+functions:
+  start_fly:
+    ue_function_path: "/Script/Pal.PalPlayerController:StartFlyToServer"
+    hook_type: pre
+    authority: server
+    lifecycle: [spawned]
+    notes: "Enables fly mode server-side"
+
+  end_fly:
+    ue_function_path: "/Script/Pal.PalPlayerController:EndFlyToServer"
+    hook_type: pre
+    authority: server
+    lifecycle: [spawned]
+    notes: "Disables fly mode server-side"
+
+  teleport_to_safe_point:
+    ue_function_path: "/Script/Pal.PalPlayerController:TeleportToSafePoint_ToServer"
+    hook_type: pre
+    authority: server
+    lifecycle: [spawned]
+    notes: "Teleports player to a safe location. Used for respawn-safe teleport."
+
+  project_world_to_screen:
+    ue_function_path: "/Script/Pal.PalPlayerController:ProjectWorldLocationToScreen"
+    hook_type: post
+    authority: client
+    lifecycle: [spawned]
+    returns: bool
+    args:
+      - name: world_location
+        type: FVector
+        position: 0
+      - name: screen_location
+        type: FVector2D*
+        position: 1
+      - name: player_viewport_relative
+        type: bool
+        position: 2
+
+  client_restart:
+    ue_function_path: "/Script/Engine.PlayerController:ClientRestart"
+    hook_type: pre
+    authority: client
+    lifecycle: [spawned]
+    notes: "Safe init hook — fires when a new player possesses a controller. Use as entry point for mod initialization."
+
+  server_acknowledge_possession:
+    ue_function_path: "/Script/Engine.PlayerController:ServerAcknowledgePossession"
+    hook_type: pre
+    authority: server
+    lifecycle: [spawned]
+    notes: "Alternative init hook, fires server-side after possession."
+
+api_commands:
+  - syntax: "fly player {name} on"
+    backend: runtime
+    notes: "Calls StartFlyToServer"
+    returns:
+      success: "Fly mode enabled for {name}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+
+  - syntax: "fly player {name} off"
+    backend: runtime
+    notes: "Calls EndFlyToServer"
+    returns:
+      success: "Fly mode disabled for {name}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+
+todo:
+  - "Find chat send function path"
+  - "Find kick player function"
+  - "Find ban player function"
+  - "Confirm Transmitter property name"

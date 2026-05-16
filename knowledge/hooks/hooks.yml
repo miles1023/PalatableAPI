@@ -1,0 +1,101 @@
+# Known UE4SS RegisterHook and NotifyOnNewObject paths for Palworld
+# All paths confirmed from real Palworld UE4SS mods as of game version 0.7.1
+# Use these in framework/ue4ss_mod/PalatableAPI/Scripts/main.lua
+
+engine_hooks:
+  # Safe initialization points — use these as the entry point for mod setup
+  client_restart:
+    path: "/Script/Engine.PlayerController:ClientRestart"
+    fires: "When a player possesses a controller (client-side). Safest mod init point."
+    authority: client
+    use_as_init: true
+
+  server_acknowledge_possession:
+    path: "/Script/Engine.PlayerController:ServerAcknowledgePossession"
+    fires: "After possession is acknowledged server-side. Use for server-side init."
+    authority: server
+    use_as_init: true
+
+palworld_script_hooks:
+  broadcast_chat:
+    path: "/Script/Pal.PalGameStateInGame:BroadcastChatMessage"
+    fires: "When any chat message is broadcast to the game state"
+    authority: server
+    use_case: "Intercept chat for command parsing (e.g. player types !give in chat)"
+    args: [message_text, chat_category, player_name]
+
+  map_object_interact:
+    path: "/Script/Pal.PalMapObjectConcreteModelBase:OnTriggerInteract"
+    fires: "When a player interacts with any world map object"
+    authority: server
+    use_case: "Hook interactions with chests, production buildings, etc."
+
+  map_object_close:
+    path: "/Script/Pal.PalMapObject:OnCloseParameter"
+    fires: "When a map object UI is closed by the player"
+    authority: client
+    use_case: "Trigger actions when player closes a building UI"
+
+  partner_skill_value:
+    path: "/Script/Pal.PalPartnerSkillParameterComponent:GetActiveSkillMainValueByRank"
+    fires: "When the game reads a partner skill's value for a given rank"
+    authority: either
+    use_case: "Override partner skill effectiveness by rank"
+    args: [rank]
+    returns: float
+
+blueprint_hooks:
+  inventory_ui_open:
+    path: "/Game/Pal/Blueprint/UI/Inventory/WBP_PalPlayerInventoryScrollList.WBP_PalPlayerInventoryScrollList_C:Construct"
+    fires: "When the player inventory scroll list UI is constructed (opened)"
+    authority: client
+    use_case: "Trigger actions when inventory opens"
+
+  item_chest_close:
+    path: "/Game/Pal/Blueprint/UI/MapObject/ItemChest/WBP_ItemChest.WBP_ItemChest_C:Destruct"
+    fires: "When an item chest UI is closed"
+    authority: client
+    use_case: "Trigger actions when player closes a chest"
+
+  activate_otomo:
+    path: "/Game/Pal/Blueprint/Component/OtomoHolder/BP_OtomoPalHolderComponent.BP_OtomoPalHolderComponent_C:ActivateOtomo"
+    fires: "When a player activates or switches their companion Pal"
+    authority: server
+    use_case: "Hook companion Pal activation events"
+
+notify_on_new_object:
+  # Use NotifyOnNewObject for detecting when a new instance of a class is created
+  base_camp_model:
+    path: "/Script/Pal.PalBaseCampModel"
+    fires: "When a new base camp is created or loaded"
+    use_case: "Track base camp creation events"
+
+  electric_heater:
+    path: "/Game/Pal/Blueprint/MapObject/BuildObject/BP_BuildObject_HeaterElectric.BP_BuildObject_HeaterElectric_C"
+    fires: "When an electric heater building is spawned"
+    use_case: "Example of per-building-type spawn detection"
+
+  otomo_holder:
+    path: "/Game/Pal/Blueprint/Component/OtomoHolder/BP_OtomoPalHolderComponent.BP_OtomoPalHolderComponent_C"
+    fires: "When an OtomoHolder component is created (player or Pal)"
+    use_case: "Detect companion Pal system initialization"
+
+static_find_objects:
+  # Use StaticFindObject to get CDO (Class Default Object) for utility classes
+  pal_utility:
+    path: "/Script/Pal.Default__PalUtility"
+    use_case: "Access UPalUtility CDO for GetPlayerCharacter, GetOtomoHolderComponent, GetPlayerState, GetItemIDManager"
+
+  master_data_tables:
+    path: "/Script/Pal.Default__PalMasterDataTablesUtility"
+    use_case: "Access DataTable lookup functions at runtime"
+
+todo:
+  - "Find hook path for player death event"
+  - "Find hook path for Pal capture event"
+  - "Find hook path for level up event"
+  - "Find hook path for base camp attack / raid event"
+  - "Find hook path for item pickup event"
+  - "Find hook path for crafting complete event"
+  - "Find hook path for fast travel event"
+  - "Confirm BroadcastChatMessage arg names via UHT dump"

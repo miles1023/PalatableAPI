@@ -1,0 +1,30 @@
+name: APawn
+parent: AActor
+ue_module: /Script/Engine
+discovery_status: confirmed
+game_version_confirmed: "0.7.1"
+notes: Base class for all controllable characters. APalPlayerCharacter and APalCharacter (Pals) both inherit from this.
+
+properties:
+  controller:
+    access: reflected
+    ue_property: Controller
+    type: AController*
+    plain_english: controller
+    authority: server
+    lifecycle: [spawned]
+    writable: false
+    notes: "Cast to APalPlayerController for player pawns"
+
+functions:
+  get_movement_component:
+    ue_function_path: "/Script/Engine.Pawn:GetMovementComponent"
+    hook_type: post
+    authority: either
+    lifecycle: [spawned]
+    returns: UPawnMovementComponent*
+    notes: "Cast to UPalCharacterMovementComponent for Pal/Player actors"
+
+todo:
+  - "Confirm inheritance chain: APalPlayerCharacter -> ACharacter -> APawn -> AActor"
+  - "Confirm inheritance chain: APalCharacter -> APawn -> AActor"

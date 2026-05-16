@@ -1,0 +1,125 @@
+name: APalPlayerCharacter
+parent: APawn
+ue_module: /Script/Pal
+discovery_status: partial
+game_version_confirmed: "0.7.1"
+notes: >
+  The player character actor. Accessible via FindFirstOf("PalPlayerCharacter") in UE4SS Lua,
+  or via UPalUtility:GetPlayerCharacter(WorldContext).
+  Use GetPalPlayerController() to get the associated controller.
+
+properties:
+  shooter_component:
+    access: reflected
+    ue_property: ShooterComponent
+    type: UPalShooterComponent*
+    plain_english: weapon_component
+    authority: either
+    lifecycle: [spawned]
+    writable: false
+    notes: "Holds reference to currently equipped weapon"
+
+  character_parameter_component:
+    access: reflected
+    ue_property: CharacterParameterComponent
+    type: UPalCharacterParameterComponent*
+    plain_english: stats
+    authority: server
+    lifecycle: [spawned]
+    writable: false
+    notes: "Gateway to HP, MP, hunger, sanity. See UPalCharacterParameterComponent.yml"
+
+  movement_component:
+    access: reflected
+    ue_property: CharacterMovement
+    type: UPalCharacterMovementComponent*
+    plain_english: movement
+    authority: server
+    lifecycle: [spawned]
+    writable: false
+    notes: "Access walk speed, acceleration. See UPalCharacterMovementComponent.yml"
+
+functions:
+  get_pal_player_controller:
+    ue_function_path: "/Script/Pal.PalPlayerCharacter:GetPalPlayerController"
+    hook_type: post
+    authority: either
+    lifecycle: [spawned]
+    returns: APalPlayerController*
+
+  get_pal_character_movement_component:
+    ue_function_path: "/Script/Pal.PalPlayerCharacter:GetPalCharacterMovementComponent"
+    hook_type: post
+    authority: either
+    lifecycle: [spawned]
+    returns: UPalCharacterMovementComponent*
+
+api_commands:
+  - syntax: "set player {name} health {value}"
+    backend: runtime
+    notes: "Routes through CharacterParameterComponent -> IndividualParameter.Hp.Value"
+    returns:
+      success: "Player {name} health set to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+        - code: VALUE_OUT_OF_RANGE
+          message: "Health must be between 0 and the player's max health"
+
+  - syntax: "set player {name} invincible {on|off}"
+    backend: runtime
+    notes: "Sets UPalCharacterParameterComponent.bIsEnableMuteki"
+    returns:
+      success: "Player {name} invincibility set to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+
+  - syntax: "set player {name} walkspeed {value}"
+    backend: runtime
+    notes: "Sets UPalCharacterMovementComponent.MaxWalkSpeed"
+    returns:
+      success: "Player {name} walk speed set to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+        - code: SERVER_AUTHORITY
+          message: "Walk speed is server-authoritative — change may be overwritten"
+
+  - syntax: "give {amount} {item} to {name}"
+    backend: runtime
+    notes: "Routes through APalPlayerState -> UPalPlayerInventoryData.RequestAddItem"
+    returns:
+      success: "Gave {amount} x {item} to {name}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+        - code: ITEM_NOT_FOUND
+          message: "No item named '{item}' exists — check docs/api.md for item names"
+        - code: INVENTORY_FULL
+          message: "{name}'s inventory is full"
+
+  - syntax: "respawn player {name}"
+    backend: runtime
+    notes: "Calls APalPlayerState.RequestRespawn"
+    returns:
+      success: "Player {name} respawned"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+
+  - syntax: "teleport player {name} to {x} {y} {z}"
+    backend: runtime
+    notes: "Calls APalPlayerController.TeleportToSafePoint_ToServer"
+    returns:
+      success: "Teleported {name} to ({x}, {y}, {z})"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+
+todo:
+  - "Confirm CharacterMovement property name (may be inherited from ACharacter)"
+  - "Find OtomoHolderComponent property for companion Pal access"
+  - "Find player display name / username property"
+  - "Find experience and level properties"
+  - "Find technology points property"

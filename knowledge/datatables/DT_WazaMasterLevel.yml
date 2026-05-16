@@ -1,0 +1,40 @@
+name: DT_WazaMasterLevel
+asset_path: /Game/Pal/DataTable/Waza/DT_WazaMasterLevel
+palschema_dir: pals/ (via AbilitiesByLevel synthetic field)
+description: Defines which moves each Pal species learns at each level.
+backend: datatables
+discovery_status: partial
+game_version_confirmed: "0.7.1"
+row_key_format: "Combination of PalID and level — exact format TBD"
+notes: >
+  Best edited via the synthetic AbilitiesByLevel field in DT_PalMonsterParameter.yml.
+  PalSchema handles the row key generation and cross-table write automatically.
+
+columns:
+  WazaID:
+    type: FName
+    plain_english: move_id
+    description: "Internal move identifier matching a row in DT_WazaDataTable"
+
+  Level:
+    type: int
+    plain_english: learn_level
+    description: "Level at which this Pal learns this move"
+    range: "1-50+"
+
+api_commands:
+  - syntax: "set pal-species {name} learn {move} at level {level}"
+    backend: datatables
+    notes: "Adds or updates an ability in AbilitiesByLevel for this species"
+    returns:
+      success: "Set {name} to learn {move} at level {level}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No Pal species named '{name}' found"
+        - code: ITEM_NOT_FOUND
+          message: "No move named '{move}' found"
+
+todo:
+  - "Confirm row key format via FModel"
+  - "Extract all WazaID values and map to plain-English move names"
+  - "Find how PalSchema generates the row key from PalID + Level"

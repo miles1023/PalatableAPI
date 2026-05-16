@@ -1,0 +1,168 @@
+name: DT_BuildObjectDataTable
+asset_path: /Game/Pal/DataTable/Build/DT_BuildObjectDataTable
+palschema_dir: buildings/
+description: Definitions for all buildable base structures. HP, defense, material costs, work assignments.
+backend: datatables
+discovery_status: confirmed
+game_version_confirmed: "0.7.1"
+row_key_format: "Building internal ID e.g. WorkBench, Furnace, PalBox"
+notes: >
+  Buildings also have associated entries in DT_MapObjectMasterDataTable and DT_TechnologyRecipeUnlock.
+  The buildings/ PalSchema folder handles cross-table writing automatically for the BuildingData and Assignments sections.
+
+columns:
+  Name:
+    type: string
+    plain_english: display_name
+    description: "[Synthetic] Display name — PalSchema writes to DT_MapObjectNameText"
+
+  Description:
+    type: string
+    plain_english: description
+    description: "[Synthetic] Description — PalSchema writes to DT_BuildObjectDescText"
+
+  BlueprintClassName:
+    type: string
+    plain_english: blueprint_class
+    description: "Short Blueprint class name for this building"
+
+  Hp:
+    type: int
+    plain_english: hp
+    description: "Maximum HP of the structure"
+
+  Defense:
+    type: int
+    plain_english: defense
+    description: "Defense stat of the structure"
+
+  MaterialType:
+    type: string
+    plain_english: material_type
+    description: "Primary material category"
+    enum_values: [None, Wood, Stone]
+
+  MaterialSubType:
+    type: string
+    plain_english: material_subtype
+    description: "Sub-material category affecting aesthetics and bonuses"
+    enum_values: [None, Wood, Stone, Metal, Ingot, Platinum]
+
+  bBelongToBaseCamp:
+    type: bool
+    plain_english: is_base_building
+    description: "Whether this building is part of a base camp and counts toward its stats"
+
+  DeteriorationDamage:
+    type: float
+    plain_english: deterioration_rate
+    description: "HP lost per deterioration tick when not maintained"
+
+  TypeA:
+    type: FName
+    plain_english: building_category_a
+    description: "Primary building function category"
+    enum: EPalBuildObjectTypeA
+    enum_values: [Product, ProductPal, ProductFarm, ProductFarmCrop, Mining, MiningRock, Energy, Breeding, Defense, Dismantle]
+
+  TypeB:
+    type: FName
+    plain_english: building_category_b
+    description: "Secondary building function category"
+    enum: EPalBuildObjectTypeB
+    enum_values: [Prod_Craft, Prod_Pal, Prod_PalEgg, Prod_Farm, Prod_FarmCrop, Prod_Mine, Prod_Mine_Rock, Prod_Energy, Prod_Breed, Defense_Turret, Defense_Wall, Defense_Gate, Defense_Misc, Found_Ground, Found_Ceiling, Found_Wall, Found_House]
+
+  Rank:
+    type: int
+    plain_english: rank
+    description: "Building tier/rank"
+
+  RequiredBuildWorkAmount:
+    type: float
+    plain_english: build_work_cost
+    description: "Work required to construct this building"
+
+  Material1_Id:
+    type: FName
+    plain_english: build_material_1
+
+  Material1_Count:
+    type: int
+    plain_english: build_material_1_amount
+
+  Material2_Id:
+    type: FName
+    plain_english: build_material_2
+
+  Material2_Count:
+    type: int
+    plain_english: build_material_2_amount
+
+  Material3_Id:
+    type: FName
+    plain_english: build_material_3
+
+  Material3_Count:
+    type: int
+    plain_english: build_material_3_amount
+
+  Material4_Id:
+    type: FName
+    plain_english: build_material_4
+
+  Material4_Count:
+    type: int
+    plain_english: build_material_4_amount
+
+  # Work Assignments (array of assignment structs in buildings/ JSON)
+  Assignments:
+    type: array
+    plain_english: work_assignments
+    description: "List of work slots — each defines a work type, suitability, and max workers"
+    notes: >
+      Array items have: WorkSuitability, WorkSuitabilityRank, bPlayerWorkable,
+      bBaseCampWorkerWorkable, WorkType, WorkActionType, WorkerMaxNum,
+      AffectSanityValue, AffectFullStomachValue
+
+  # Technology unlock (sub-struct in buildings/ JSON)
+  Technology:
+    type: struct
+    plain_english: technology_unlock
+    description: "Technology tree entry that unlocks this building"
+    notes: >
+      Fields: UnlockBuildObjects (array of FName), IconName, IsBossTechnology (bool),
+      Name (string), Description (string), LevelCap (int), Cost (int)
+
+api_commands:
+  - syntax: "set building {name} hp {value}"
+    backend: datatables
+    column: Hp
+    returns:
+      success: "Set {name} HP to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No building named '{name}' found"
+
+  - syntax: "set building {name} defense {value}"
+    backend: datatables
+    column: Defense
+    returns:
+      success: "Set {name} defense to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No building named '{name}' found"
+
+  - syntax: "set building {name} build_cost free"
+    backend: datatables
+    notes: "Sets all Material counts to 0"
+    returns:
+      success: "Set {name} build cost to free"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No building named '{name}' found"
+
+todo:
+  - "Build plain-English to building ID map (needs FModel export)"
+  - "Confirm asset path for DT_BuildObjectDataTable"
+  - "Find how to add a new building via PalSchema (needs BlueprintClassName and new BP asset)"
+  - "Confirm Assignments array structure matches buildings/ JSON format"

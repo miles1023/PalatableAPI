@@ -1,0 +1,41 @@
+name: APalPlayerState
+parent: APlayerState
+ue_module: /Script/Pal
+discovery_status: partial
+game_version_confirmed: "0.7.1"
+notes: >
+  Obtained via APalPlayerController.PlayerState (cast to APalPlayerState).
+  Also via UPalUtility:GetPlayerState(character).
+  Holds the inventory and respawn function.
+
+properties:
+  inventory_data:
+    access: reflected
+    ue_property: InventoryData
+    type: UPalPlayerInventoryData*
+    plain_english: inventory
+    authority: server
+    lifecycle: [spawned]
+    writable: false
+    notes: "Gateway to item slots, weight, RequestAddItem. See UPalPlayerInventoryData.yml"
+
+functions:
+  request_respawn:
+    ue_function_path: "/Script/Pal.PalPlayerState:RequestRespawn"
+    hook_type: pre
+    authority: server
+    lifecycle: [spawned]
+    notes: "Triggers a server-side respawn for this player"
+
+  get_inventory_data:
+    ue_function_path: "/Script/Pal.PalPlayerState:GetInventoryData"
+    hook_type: post
+    authority: server
+    lifecycle: [spawned]
+    returns: UPalPlayerInventoryData*
+
+todo:
+  - "Confirm InventoryData property name via UHT dump"
+  - "Find player guild ID property"
+  - "Find player online status / ping property"
+  - "Find player kill / death stats if exposed"

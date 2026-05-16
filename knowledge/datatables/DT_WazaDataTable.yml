@@ -1,0 +1,45 @@
+name: DT_WazaDataTable
+asset_path: /Game/Pal/DataTable/Waza/DT_WazaDataTable
+palschema_dir: raw/
+description: Definitions for all Pal moves/abilities (Waza). Damage, element, cooldown, range.
+backend: datatables
+discovery_status: unverified
+game_version_confirmed: null
+row_key_format: "Move internal ID e.g. EPalWazaID values"
+notes: >
+  'Waza' is the internal term for moves/abilities (borrowed from Japanese: waza = technique/move).
+  Specific column names need to be extracted via FModel or UHT dump.
+  This entry is a stub — columns below are inferred from typical UE move systems.
+
+columns:
+  WazaType:
+    type: FName
+    plain_english: move_element
+    description: "Elemental type of this move"
+    enum: EPalElementType
+
+  AttackValue:
+    type: float
+    plain_english: damage
+    description: "Base damage value (estimated field name)"
+    notes: "Field name unconfirmed — needs FModel export"
+
+  CoolTime:
+    type: float
+    plain_english: cooldown
+    description: "Cooldown in seconds (estimated field name)"
+    notes: "Field name unconfirmed"
+
+  Power:
+    type: float
+    plain_english: power
+    description: "Move power stat (estimated)"
+    notes: "Field name unconfirmed"
+
+todo:
+  - "Extract all column names via FModel from DT_WazaDataTable.uasset"
+  - "Confirm move element column name"
+  - "Find damage column name"
+  - "Find cooldown column name"
+  - "Find range/targeting type column"
+  - "Find SP cost column if applicable"

@@ -1,0 +1,89 @@
+name: UPalPlayerInventoryData
+parent: UObject
+ue_module: /Script/Pal
+discovery_status: confirmed
+game_version_confirmed: "0.7.1"
+notes: >
+  Accessed via APalPlayerState:GetInventoryData().
+  Manages the player's item slots, weight limit, and item add requests.
+  InventoryMultiHelper holds the actual slot containers.
+
+properties:
+  max_carry_weight:
+    access: reflected
+    ue_property: MaxInventoryWeight
+    type: float
+    plain_english: carryweight
+    authority: server
+    lifecycle: [spawned]
+    writable: true
+    persistence: session
+    side_effects: "Server-authoritative. Write may be reset on server tick or player reconnect."
+
+  current_weight:
+    access: reflected
+    ue_property: NowItemWeight
+    type: float
+    plain_english: current_weight
+    authority: server
+    lifecycle: [spawned]
+    writable: false
+    notes: "Read-only — calculated from items. Do not write."
+
+  inventory_multi_helper:
+    access: reflected
+    ue_property: InventoryMultiHelper
+    type: UPalItemContainerMultiHelper*
+    plain_english: item_containers
+    authority: server
+    lifecycle: [spawned]
+    writable: false
+    notes: "Holds the array of item containers. See UPalItemContainer.yml"
+
+functions:
+  request_add_item:
+    ue_function_path: "/Script/Pal.PalPlayerInventoryData:RequestAddItem"
+    hook_type: pre
+    authority: server
+    lifecycle: [spawned]
+    args:
+      - name: static_id
+        type: FName
+        position: 0
+        notes: "Item internal ID e.g. 'Stone', 'IronOre', 'HandgunBullet_Blank'"
+      - name: count
+        type: int
+        position: 1
+      - name: unknown_bool
+        type: bool
+        position: 2
+        notes: "Purpose unknown — pass true"
+    notes: "The correct server-safe way to give items. Prefer this over writing slots directly."
+
+api_commands:
+  - syntax: "set player {name} carryweight {value}"
+    backend: runtime
+    notes: "Sets MaxInventoryWeight directly. Use 'infinite' for 99999999.0"
+    returns:
+      success: "Player {name} carry weight set to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+        - code: SERVER_AUTHORITY
+          message: "Carry weight is server-authoritative — change may be reset on reconnect"
+
+  - syntax: "set player {name} carryweight infinite"
+    backend: runtime
+    notes: "Sets MaxInventoryWeight to 99999999.0"
+    returns:
+      success: "Player {name} carry weight set to unlimited"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+
+todo:
+  - "Confirm MaxInventoryWeight property name via UHT dump"
+  - "Confirm NowItemWeight property name"
+  - "Find inventory slot count property (separate from weight?)"
+  - "Find RequestRemoveItem equivalent"
+  - "Test whether RequestAddItem works on dedicated server from Lua mod"

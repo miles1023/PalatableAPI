@@ -1,0 +1,62 @@
+name: UPalCharacterMovementComponent
+parent: UCharacterMovementComponent
+ue_module: /Script/Pal
+discovery_status: partial
+game_version_confirmed: "0.7.1"
+notes: >
+  Accessed via APalPlayerCharacter:GetPalCharacterMovementComponent().
+  Controls movement physics for players and Pals.
+  MaxWalkSpeed and MaxAcceleration are the primary modifiable fields.
+  Server-authoritative — changes on client will be overridden.
+
+properties:
+  max_walk_speed:
+    access: reflected
+    ue_property: MaxWalkSpeed
+    type: float
+    plain_english: walkspeed
+    authority: server
+    lifecycle: [spawned]
+    writable: true
+    persistence: session
+    side_effects: "Server-authoritative. Client-side write will be corrected by server. Must modify on server."
+    notes: "Default player walk speed is approximately 600.0. Sprint is higher."
+
+  max_acceleration:
+    access: reflected
+    ue_property: MaxAcceleration
+    type: float
+    plain_english: acceleration
+    authority: server
+    lifecycle: [spawned]
+    writable: true
+    persistence: session
+
+api_commands:
+  - syntax: "set player {name} walkspeed {value}"
+    backend: runtime
+    notes: "Sets MaxWalkSpeed. Default is ~600. 'default' restores 600."
+    returns:
+      success: "Player {name} walk speed set to {value}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+        - code: SERVER_AUTHORITY
+          message: "Walk speed is server-authoritative — this must run on the server"
+
+  - syntax: "set player {name} walkspeed default"
+    backend: runtime
+    notes: "Restores MaxWalkSpeed to 600.0"
+    returns:
+      success: "Player {name} walk speed restored to default"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+
+todo:
+  - "Find sprint speed property (may be a separate field or a multiplier)"
+  - "Find swim speed property"
+  - "Find climb speed property"
+  - "Find jump Z velocity property"
+  - "Find glider/mount speed modifiers"
+  - "Confirm default MaxWalkSpeed value via live memory read"

@@ -1,0 +1,54 @@
+name: UPalItemContainer
+parent: UObject
+ue_module: /Script/Pal
+discovery_status: partial
+game_version_confirmed: "0.7.1"
+notes: >
+  A single container of item slots (e.g. player backpack, chest, production building output).
+  Accessed via UPalItemContainerMultiHelper.Containers[index].
+  Each container has an array of UPalItemSlot.
+
+properties:
+  item_slot_array:
+    access: reflected
+    ue_property: ItemSlotArray
+    type: TArray<UPalItemSlot*>
+    plain_english: slots
+    authority: server
+    lifecycle: [spawned]
+    writable: false
+    notes: "Index into this array to get individual slots. See UPalItemSlot.yml"
+
+functions:
+  get_slot:
+    ue_function_path: "/Script/Pal.PalItemContainer:Get"
+    hook_type: post
+    authority: server
+    lifecycle: [spawned]
+    args:
+      - name: index
+        type: int
+        position: 0
+    returns: UPalItemSlot*
+
+  request_sort_container:
+    ue_function_path: "/Script/Pal.PalItemContainer:RequestSortContainer"
+    hook_type: pre
+    authority: server
+    lifecycle: [spawned]
+    notes: "Triggers a sort of the container's slots server-side"
+
+api_commands:
+  - syntax: "sort player {name} inventory"
+    backend: runtime
+    notes: "Calls RequestSortContainer on the player's main inventory container"
+    returns:
+      success: "Sorted {name}'s inventory"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No player named '{name}' is currently in the game"
+
+todo:
+  - "Identify which container index is the main player backpack vs. equipment vs. key items"
+  - "Find container ID property to distinguish container types"
+  - "Confirm ItemSlotArray property name via UHT dump"

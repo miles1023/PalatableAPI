@@ -1,0 +1,29 @@
+# PalatableAPI Configuration
+# Copy this file to config.yml and fill in your values.
+# config.yml is gitignored — your local settings stay local.
+
+# Path to your Palworld installation
+palworld_path: "C:/Program Files (x86)/Steam/steamapps/common/Palworld"
+
+# Path to UE4SS installation (Okaetsu fork recommended)
+# https://github.com/Okaetsu/RE-UE4SS/releases
+ue4ss_path: "C:/Program Files (x86)/Steam/steamapps/common/Palworld/Pal/Binaries/Win64/ue4ss"
+
+# Which binary type you're modding
+# "client" = Palworld.exe (single player / playing the game)
+# "server" = PalServer-Win64-Shipping-Server.exe (dedicated server)
+binary_type: client
+
+# Current game version (update this after each game update)
+game_version: "0.7.1"
+
+# Named pipe name used for IPC between host and UE4SS Lua mod
+# Only change this if you have a conflict with another application
+pipe_name: "PalatableAPI"
+
+# Where patch output files are written (PalSchema raw/ patches)
+output_dir: "output/patches"
+
+# Where to deploy patches (PalSchema mod folder)
+# Set to your actual PalSchema mod directory for one-command deploy
+deploy_dir: "C:/Program Files (x86)/Steam/steamapps/common/Palworld/Pal/Content/Paks/~mods/PalatableAPI/raw"

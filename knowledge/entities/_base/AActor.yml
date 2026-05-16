@@ -1,0 +1,41 @@
+name: AActor
+parent: UObject
+ue_module: /Script/Engine
+discovery_status: confirmed
+game_version_confirmed: "0.7.1"
+notes: Base class for all actors placed in a level. All Pal, Player, Building, and Weapon classes inherit from this.
+
+properties:
+  world_location:
+    access: reflected
+    ue_property: RootComponent.RelativeLocation
+    type: FVector
+    plain_english: location
+    authority: server
+    lifecycle: [spawned]
+    writable: true
+    persistence: session
+    side_effects: "Teleports the actor. Use APalPlayerController:TeleportToSafePoint_ToServer for players — direct write may not update nav mesh."
+
+  world_rotation:
+    access: reflected
+    ue_property: RootComponent.RelativeRotation
+    type: FRotator
+    plain_english: rotation
+    authority: either
+    lifecycle: [spawned]
+    writable: true
+    persistence: session
+
+  actor_name:
+    access: reflected
+    ue_property: Name
+    type: FName
+    plain_english: actor_name
+    authority: either
+    lifecycle: [spawned]
+    writable: false
+
+todo:
+  - "Confirm RootComponent chain works for all child classes"
+  - "Check if RelativeLocation vs WorldLocation matters for nested components"

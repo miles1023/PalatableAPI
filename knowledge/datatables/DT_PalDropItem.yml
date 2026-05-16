@@ -1,0 +1,217 @@
+name: DT_PalDropItem
+asset_path: /Game/Pal/DataTable/Character/DT_PalDropItem
+palschema_dir: pals/ (via Loot synthetic field)
+description: Drop/loot tables for every Pal species. Up to 10 items per Pal.
+backend: datatables
+discovery_status: confirmed
+game_version_confirmed: "0.7.1"
+row_key_format: "{EPalTribeID}000 e.g. SheepBall000, Anubis000"
+notes: >
+  Best edited via the synthetic Loot field in DT_PalMonsterParameter.yml when using PalSchema.
+  Direct raw/ edits are also supported.
+
+columns:
+  CharacterId:
+    type: FName
+    plain_english: pal_species
+    description: "Internal Pal ID (EPalTribeID value)"
+
+  ItemId1:
+    type: FName
+    plain_english: drop_item_1
+    description: "Item ID for drop slot 1 (matches DA_StaticItemDataAsset row key)"
+
+  Rate1:
+    type: float
+    plain_english: drop_chance_1
+    description: "Drop probability for slot 1 as percentage 0.0-100.0"
+    range: "0.0-100.0"
+
+  min1:
+    type: int
+    plain_english: drop_min_1
+    description: "Minimum quantity dropped from slot 1"
+
+  Max1:
+    type: int
+    plain_english: drop_max_1
+    description: "Maximum quantity dropped from slot 1"
+
+  ItemId2:
+    type: FName
+    plain_english: drop_item_2
+    description: "Item ID for drop slot 2"
+
+  Rate2:
+    type: float
+    plain_english: drop_chance_2
+    range: "0.0-100.0"
+
+  min2:
+    type: int
+    plain_english: drop_min_2
+
+  Max2:
+    type: int
+    plain_english: drop_max_2
+
+  ItemId3:
+    type: FName
+    plain_english: drop_item_3
+
+  Rate3:
+    type: float
+    plain_english: drop_chance_3
+    range: "0.0-100.0"
+
+  min3:
+    type: int
+    plain_english: drop_min_3
+
+  Max3:
+    type: int
+    plain_english: drop_max_3
+
+  ItemId4:
+    type: FName
+    plain_english: drop_item_4
+
+  Rate4:
+    type: float
+    plain_english: drop_chance_4
+    range: "0.0-100.0"
+
+  min4:
+    type: int
+    plain_english: drop_min_4
+
+  Max4:
+    type: int
+    plain_english: drop_max_4
+
+  ItemId5:
+    type: FName
+    plain_english: drop_item_5
+
+  Rate5:
+    type: float
+    plain_english: drop_chance_5
+    range: "0.0-100.0"
+
+  min5:
+    type: int
+    plain_english: drop_min_5
+
+  Max5:
+    type: int
+    plain_english: drop_max_5
+
+  ItemId6:
+    type: FName
+    plain_english: drop_item_6
+
+  Rate6:
+    type: float
+    plain_english: drop_chance_6
+    range: "0.0-100.0"
+
+  min6:
+    type: int
+    plain_english: drop_min_6
+
+  Max6:
+    type: int
+    plain_english: drop_max_6
+
+  ItemId7:
+    type: FName
+    plain_english: drop_item_7
+
+  Rate7:
+    type: float
+    plain_english: drop_chance_7
+    range: "0.0-100.0"
+
+  min7:
+    type: int
+    plain_english: drop_min_7
+
+  Max7:
+    type: int
+    plain_english: drop_max_7
+
+  ItemId8:
+    type: FName
+    plain_english: drop_item_8
+
+  Rate8:
+    type: float
+    plain_english: drop_chance_8
+    range: "0.0-100.0"
+
+  min8:
+    type: int
+    plain_english: drop_min_8
+
+  Max8:
+    type: int
+    plain_english: drop_max_8
+
+  ItemId9:
+    type: FName
+    plain_english: drop_item_9
+
+  Rate9:
+    type: float
+    plain_english: drop_chance_9
+    range: "0.0-100.0"
+
+  min9:
+    type: int
+    plain_english: drop_min_9
+
+  Max9:
+    type: int
+    plain_english: drop_max_9
+
+  ItemId10:
+    type: FName
+    plain_english: drop_item_10
+
+  Rate10:
+    type: float
+    plain_english: drop_chance_10
+    range: "0.0-100.0"
+
+  min10:
+    type: int
+    plain_english: drop_min_10
+
+  Max10:
+    type: int
+    plain_english: drop_max_10
+
+api_commands:
+  - syntax: "set pal-species {name} drop {slot} item {item}"
+    backend: datatables
+    notes: "slot is 1-10, item is item plain-English name"
+    returns:
+      success: "Set {name} drop slot {slot} to {item}"
+      errors:
+        - code: TARGET_NOT_FOUND
+          message: "No Pal species named '{name}' found"
+        - code: VALUE_OUT_OF_RANGE
+          message: "Drop slot must be 1-10"
+
+  - syntax: "set pal-species {name} drop {slot} chance {value}"
+    backend: datatables
+    notes: "value is 0.0-100.0"
+    returns:
+      success: "Set {name} drop slot {slot} chance to {value}%"
+      errors:
+        - code: VALUE_OUT_OF_RANGE
+          message: "Drop chance must be between 0.0 and 100.0"
+
+todo:
+  - "Map common item FNames to plain-English names for the API layer"
+  - "Confirm row key format is exactly {TribeID}000"
