@@ -1,294 +1,153 @@
-# PalatableAPI — Claude Code Project Context
-
-This file is auto-read by Claude Code at session start. It is the authoritative reference for
-project vision, architecture decisions, open questions, and working philosophy. Keep it current.
+# CLAUDE.md
+# Read this before doing anything else in this repository.
+# Last updated: 2026-05-16
 
 ---
 
-## What This Project Is
+## CRITICAL — Communication Style
 
-**PalatableAPI** (formerly PALlainEnglish -- "PAL" + "plain English") is a Palworld modding
-framework analogous to BakkesMod for Rocket League. Modders type plain-English commands; the
-framework handles all Unreal Engine internals, DLL injection, and memory management underneath.
+**The user is non-technical. All explanations must be in plain, non-technical language.**
 
-**Core vision (user's own words):** "A framework solves all of that once, centrally. The modder
-just says 'I want to change this Pal's attack damage' and the framework already knows how to do
-everything else."
+- Never use jargon without immediately explaining what it means in plain terms.
+- Never explain what something IS without also explaining what the user experiences or gains from it.
 
-**API style examples:**
+---
+
+## What This Project Is RIGHT NOW
+
+We are in **Phase: Reverse Engineering**. The goal is to build a complete, accurate map of
+Palworld's internal systems — memory, functions, entities, events, hooks, server interfaces,
+and every modding surface — before touching any API design.
+
+**The plain-English API comes LAST.** The folder `future-api/` is intentionally empty.
+Do not put anything in it. Do not design commands, verbs, or API syntax. That phase has not started.
+
+The old framework code (Python parser, Lua mod, grammar files, knowledge/ YAMLs) was the
+pre-RE prototype. It has been superseded by this structured RE capture system. Do not reference
+or rebuild it. The pre-migration data from that effort is in `findings/pre-migration/`.
+
+---
+
+## CRITICAL — Training Data Warning
+
+**Palworld training data is approximately 2 years out of date.**
+The game was in active beta development and changed constantly. Do not use training data
+about Palworld as a reliable source for anything — class names, offsets, hook paths, DataTable
+schemas, tool instructions.
+
+Any entry you add from training data must be tagged: `[UNVERIFIED - training data, may be outdated]`
+
+All verified knowledge must come from current 2026 sources in `evidence/sources-2026.md`.
+
+---
+
+## Project Structure
+
 ```
-give 10 "Stones" to "PlayerName"
-change global carryweight infinite
-add global playerinventoryslots 50
-set pal "Lamball" health max
-```
-
-**Scope:** Full runtime framework -- BOTH in-memory modification AND DLL injection. Not limited
-to config/data mods.
-
----
-
-## This Is a Real API, Not a Mod Bundle
-
-This distinction was made explicitly and must be maintained in all future work.
-
-**What makes it a real API vs a mod bundle:**
-
-A real API defines its contract first -- the stable surface modders code against -- and then
-backends implement it underneath. The caller never knows or cares which backend ran. A mod bundle
-is the opposite: "call UE4SS this way, call PalSchema that way," and when either changes,
-everything breaks.
-
-**The real test:** Can a modder write `give 10 "Stones" to "PlayerName"` and have it work without
-knowing whether UE4SS is running, whether there's a DataTable for items, or what
-`RequestAddItem`'s signature is? If yes, it's an API. If the answer is "only works if UE4SS is
-installed and attached and the game version matches the YAMLs," it's a wrapper.
-
-**Where the design IS genuinely an API:**
-- The grammar (`palworld.lark` + `commands.yml`) is defined independent of any backend. The
-  same command means the same thing whether it runs through UE4SS reflection, raw memory write,
-  or a DataTable patch. The caller does not choose.
-- The resolver picks Tier 1 vs Tier 2 automatically based on what is confirmed available for
-  that property. Modders never touch offsets.
-- Game updates break the knowledge YAMLs (internal mapping), NOT the API surface. The API
-  contract is version-stable even when internals change.
-
-**Where it risks becoming a wrapper (watch for these):**
-- If every command is a 1:1 thin wrap around a specific UE4SS function (`RequestAddItem` ->
-  `give item`), we are just PalSchema with nicer syntax.
-- If the DataTable backend literally calls PalSchema, we depend on PalSchema being alive.
-- If the grammar is too tied to current Palworld concepts (specific Pal names, current item IDs
-  hardcoded), it cannot evolve.
-- If the resolver has only one known path per command rather than genuine backend selection.
-
-**The real API work still to do:** The resolver must be truly backend-agnostic. Currently most
-commands are mapped to a single known implementation path. The resolver should select among
-available backends based on what is confirmed working for the current game version and context.
-
----
-
-## Palworld Landscape (May 2026)
-
-- 32M+ players across Steam, Xbox, PS5
-- Palworld 1.0 confirmed for 2026, labeled "Top Secret" -- major update incoming, expect all
-  hardcoded addresses to change; byte signatures more likely to survive than addresses; DataTable
-  column names most likely to survive
-- Official Steam Workshop mod support in active development but NOT yet shipped
-- Current mods: .pak asset replacement or UE4SS scripting mods
-
-**Game version history:**
-- 0.7.1 (2025-12-19, UE 5.1.1) -- last verified; broke PalSchema pak redirector
-- 1.0 (2026-TBD) -- upcoming, labeled Top Secret by Pocketpair
-
----
-
-## Competition: PalSchema (Okaetsu)
-
-- Config/data mods only via JSON patches to DataTables
-- Breaks on every major game update (broke on 0.7.0)
-- One developer, no official backing
-- Community asking Pocketpair to adopt it officially
-- GitHub: github.com/Okaetsu/PalSchema
-- Data format: .schema.json files per DataTable
-
-**How PalatableAPI differs:**
-1. Full runtime scope -- live game state, not just data tables
-2. Both DLL injection AND in-memory modification
-3. Plain-English API surface -- modders never touch raw addresses
-4. Systematically discovered -- enumerate every possible mod capability
-5. Two-tier access (reflected + direct) -- resilient to updates
-
----
-
-## Architecture
-
-**Foundation:** UE4SS (Okaetsu fork) handles DLL injection and UE reflection. We build on top
-of it. UE4SS is a backend, not a dependency the modder knows about.
-
-**Two-tier property access:**
-- Tier 1: Reflected -- UE4SS accesses properties by name (no addresses needed, update-resilient)
-- Tier 2: Direct -- raw memory offsets + byte AOB signatures (fallback for non-reflected fields)
-
-**Two execution backends:**
-- Runtime backend -- UE4SS Lua mod runs inside the game, receives commands via named pipe IPC
-- DataTable backend -- generates PalSchema-compatible JSON patches for static game data
-
-**Project structure:**
-```
-knowledge/
-  entities/         -- runtime objects (APalPlayerCharacter, etc.) -- 11 files
-  datatables/       -- static data (DT_PalMonsterParameter, etc.) -- 7 files
-  hooks/            -- UE4SS RegisterHook paths
-  enums/            -- all game enum values
-  sessions/         -- RE session notes
-  discovery_index.yml -- auto-generated status dashboard (run reindex.py to refresh)
-  versions.yml      -- game version history and breaking changes
-
-grammar/
-  palworld.lark     -- formal Lark parse grammar (authoritative -- defines what parses)
-  commands.yml      -- verb/property/error definitions (lookup only, not grammar)
-
-framework/
-  ue4ss_mod/        -- Lua mod (runs inside game process)
-  host/             -- Python CLI (parser, resolver, router, bridge, repl)
-  tools/            -- reindex.py, validate.py
-
-docs/api.md         -- what modders read
+survey/           Phase 0 outputs — SURFACES.md and GAME_SYSTEMS.md (the scope)
+intake/           Raw tool output landing area
+  raw/            Unprocessed. Never edit these files.
+  processed/      Files being actively parsed into findings.
+findings/         Normalized findings in canonical schema format
+  pre-migration/  Old data from 2026-05-15, not yet in canonical format
+systems/          One folder per game system (21 total) — organized by GAME SYSTEM, not by tool
+surfaces/         One folder per modding surface (14 total)
+memory/           Memory struct layouts and confirmed offsets
+  structs/        Class and struct memory layouts
+  offsets/        Specific confirmed offset records
+hooks/            Function hooks and events
+  confirmed/      Tested and working hook paths
+  candidates/     Suspected but untested hook paths
+relationships/    Cross-system dependency maps
+unknowns/         Unresolved questions and unclassified findings
+evidence/         Source tracking and confidence records (sources-2026.md has verified 2026 sources)
+sessions/         Session handoff notes (one per session)
+schemas/          Data model definitions (FINDING_SCHEMA.md is the contract)
+workflow/         Ingestion pipeline (PIPELINE.md)
+backlog/          Prioritized items for future sessions
+future-api/       EMPTY — placeholder for the API design phase, not started
 ```
 
----
-
-## Architecture Decisions -- the WHY
-
-These decisions came out of a formal gap analysis before scaffolding. Do not reverse them
-without re-reading the rationale.
-
-### Lark grammar file, not YAML tokens
-YAML token lists (verbs.yml, targets.yml, properties.yml) cannot express precedence, optionality,
-or grouping. `give 10 "Stones" to "PlayerName"` requires knowing that `10` is a quantity,
-`"Stones"` is an item name, and `to "PlayerName"` is a target phrase. None of that structure is
-expressible in YAML. Edit `palworld.lark` to add syntax; `commands.yml` is lookup only.
-
-### Single commands.yml (not split verbs/targets/properties)
-The three-file split required joining across files to validate one command. `give global` and
-`set item health` would both parse successfully and fail silently at runtime because no file
-defined verb+target compatibility. One entry in commands.yml per command, all fields populated.
-
-### Property path key for component traversal
-A Pal's health is NOT a flat field on APal. It lives in a UHealthComponent attached to the Pal
-actor. Flat offset access reads wrong memory silently. Properties use a `path:` key (e.g.
-`path: HealthComponent -> CurrentHealth`) alongside the raw offset. If path is unknown, mark
-the property `unverified`.
-
-### Per-offset authority field (not class-level context flag)
-Palworld dedicated servers are server-authoritative. Writing a player's carry weight client-side
-is overwritten by the next server tick. Some fields are safe client-side (cosmetic), others are
-not (inventory counts, stats). A coarse `context: multiplayer_safe` flag cannot express this.
-Each property has `authority: client | server | either`.
-
-### AOB signature validation + broken_since field
-`game_version_confirmed: 0.7.1` records when an offset was last verified, not whether it still
-works. Without active validation, users on 0.8.x silently get wrong values. Always include an
-AOB signature when adding a raw offset. Framework validates at startup.
-
-### discovery_index.yml as aggregated status dashboard
-With 20+ entity files, there is no way to answer "which offsets are unverified?" without
-grepping every YAML. `discovery_index.yml` is auto-generated by `reindex.py`. Run it after
-editing any entity or datatable YAML. Never edit it manually.
-
-### Inheritance resolution at load time
-If APal extends APawn extends AActor, and every child entity duplicates inherited properties,
-they drift out of sync. The `parent:` key lets the resolver walk the chain. Add properties
-to the base class only -- do not copy to child YAMLs.
-
-### Named pipe IPC between Python host and Lua mod
-The Lua mod runs inside the game process. Named pipes are the simplest reliable out-of-process
-communication without a custom C++ DLL. **Status: NOT yet implemented in main.lua as of
-2026-05-15. This is the next major implementation task.**
+**Organizing rule:** Findings go in `systems/<game-system>/`. Never create a folder named after
+a tool (CheatEngine, Ghidra, x64dbg). The tool is recorded in the `source.tool` field of each finding.
 
 ---
 
-## Ecosystem Research -- What Was Used to Bootstrap
+## How to Start a Session
 
-Sources investigated 2026-05-15 and used to populate the knowledge base:
-
-| Source | What was taken from it |
-|--------|----------------------|
-| NightFyre/Palworld-Internal | C++ SDK class hierarchy, property names for all entity YAMLs |
-| mczubaj/Palworld-Mods | UE4SS Lua hook paths -> hooks.yml |
-| DRayX CXX Header Gist | Full enum dump (300+ enums) -> enums.yml |
-| PalworldDataTools/PalworldDataExtractor | Additional struct property names |
-| Elliesaur/Palworld-Mods | FindAllOf patterns, dynamic item data, hook paths |
-| pwmodding.wiki | Tool workflows and UE4SS documentation |
-| PalSchema schemas | DT_PalMonsterParameter (55 cols), DT_PalDropItem (41 cols), DT_ItemRecipeDataTable (13 cols), DA_StaticItemDataAsset (20 cols), DT_BuildObjectDataTable (18 cols) |
+1. Read `RULES.md` — session continuation rules
+2. Read `NEXT_SESSION.md` — exactly what to do next, in priority order
+3. Read `sessions/<most-recent-date>.md` — what was done last
+4. Pick ONE priority from NEXT_SESSION.md. Do not hop between topics.
+5. Follow the pipeline in `workflow/PIPELINE.md`
 
 ---
 
-## Current Status (as of 2026-05-15)
+## Where Findings Go
 
-- 37 plain-English API commands defined
-- 11 entity YAML files with real SDK data
-- 7 DataTable YAML files
-- Full hooks.yml, enums.yml, grammar files
-- Python host: parser, resolver, router, bridge, repl -- all scaffolded
-- Lua UE4SS mod: skeleton with player stat handlers, named pipe IPC not yet implemented
+Every discovery follows this pipeline (defined in `workflow/PIPELINE.md`):
 
-**Discovery index summary:**
-- Entities: 11 total (4 confirmed, 6 partial, 1 unverified), 71 total TODO items
-- DataTables: 7 total (5 confirmed, 1 partial, 1 unverified)
-- Total API commands ready: 37
+```
+raw tool output → intake/raw/ → intake/processed/ → findings/ →
+systems/<name>/ or memory/ or hooks/confirmed/ or hooks/candidates/
+```
+
+The schema every finding must conform to: `schemas/FINDING_SCHEMA.md`
 
 ---
 
-## Open Questions / Blockers
+## Current Status (as of 2026-05-16)
 
-1. **DT_WazaDataTable columns** -- 0 confirmed, ~4 estimated; needs FModel export with
-   Mappings.usmap. Currently marked `unverified` with 6 TODO items.
-
-2. **EPalTribeID name map** -- ~60% complete; ~60+ entries still need plain-English names.
-   Source: PalSchema example mods.
-
-3. **FFixedPoint inner field** -- is it `.Value` or `.RawValue`? Needs CheatEngine live session
-   to confirm before any stat modification commands will work reliably.
-
-4. **Server binary hook paths** -- all function addresses are null for server. Server uses
-   Palworld-Win64-Shipping-Server.exe with different section layout than client binary.
-
-5. **Level-up, death, capture hook paths** -- not yet found or documented. Needed for event
-   hooks in the API.
-
-6. **Named pipe IPC** -- the core IPC mechanism between the Python CLI and the in-game Lua mod
-   is not yet implemented. framework/ue4ss_mod/PalatableAPI/Scripts/main.lua has the TODO.
+- RE scaffolding: COMPLETE (phases 0–5 done)
+- survey/SURFACES.md: 14 surfaces documented; RCON confirmed deprecated, Steam Workshop confirmed live
+- survey/GAME_SYSTEMS.md: 21 systems documented; all tagged [UNVERIFIED] pending live tool confirmation
+- evidence/sources-2026.md: 13 verified 2026 sources recorded
+- findings/pre-migration/: pre-RE data (hooks.yml, entity YAMLs, datatable YAMLs, enums.yml) — not yet in canonical format
+- Next step: begin RE tool sessions per NEXT_SESSION.md priorities
 
 ---
 
-## Next Session Priorities (in order)
+## RE Priorities (see NEXT_SESSION.md for full detail)
 
-1. Run FModel with Mappings.usmap to export DT_WazaDataTable column names
-2. Run UE4SS UHT generator in-game to confirm all property names against current YAMLs
-3. CheatEngine live session -- confirm FFixedPoint field (.Value vs .RawValue)
-4. Complete EPalTribeID plain-English name map from PalSchema example mods
-5. Implement named pipe IPC in framework/ue4ss_mod/PalatableAPI/Scripts/main.lua
-6. Test give_item end-to-end via RequestAddItem
+1. Confirm FFixedPoint inner field (.Value or .RawValue?) — blocks all stat modification
+2. Export DT_WazaDataTable via FModel + Mappings.usmap
+3. Run UHT dump, cross-reference pre-migration entity data
+4. Find missing event hook paths (death, capture, level-up, etc.)
+5. Process pre-migration data into canonical format
 
 ---
 
-## Tools Setup
+## MCP Tools Available
 
-**MCP Bridges (registered user-scope, available in all Claude Code sessions):**
-- `mcp__ghidra__*` -- 225 tools, static analysis (binary not running)
-- `mcp__x64dbg__*` -- 40+ tools, live debugger (step through running code)
-- `mcp__cheatengine__*` -- 180 tools, memory R/W and AOB scanning
+| Bridge | Purpose |
+|--------|---------|
+| `mcp__cheatengine__*` | Memory R/W, AOB scanning, struct dissection, pointer chains |
+| `mcp__ghidra__*` | Static binary analysis, function addresses, struct layouts |
+| `mcp__x64dbg__*` | Live debugging, breakpoints, register inspection, call stacks |
 
-**CE required setting:** Settings > Extra > uncheck "Query memory region routines" (prevents
-BSOD on DBVM-protected pages). User must set this manually.
+**CE required setting:** Settings > Extra > uncheck "Query memory region routines" (prevents BSOD).
 
-**RE workflow:**
-- Ghidra: static analysis, find function addresses, disassemble without running game
-- x64dbg: live debugging, breakpoints, step through game code
-- CheatEngine: scan for values, read/write memory, find structs while game runs
+---
+
+## What Is Out of Scope Until the RE Map Is Complete
+
+Do not do any of the following:
+
+- API design — no command syntax, no verbs, no grammar files
+- Backend implementation — no Python, no Lua, no framework code
+- SDK or tooling — no language bindings
+- Anything in `future-api/` — leave it empty
+
+If you find yourself thinking about "what the modder would type" — stop.
+Record the raw finding and move on. The API phase comes later.
+
+---
+
+## Game Version
+
+Current: **0.7.1** (released 2025-12-19, UE 5.1.1)
+Palworld 1.0 "World Tree update" is upcoming (2026, no confirmed date). All hardcoded addresses
+will change at 1.0. Byte signatures and reflected property names are more likely to survive.
 
 **Python:** C:\Python314\python.exe (3.14.4)
 **uv:** C:\Users\bmile\AppData\Roaming\Python\Python314\Scripts\uv.exe
-**All D:\Tools entries are full directory copies, not symlinks.**
-
----
-
-## Working Rules for This Project
-
-1. The API surface (grammar, commands.yml) is defined before any backend implementation.
-   Never let backend capabilities dictate what commands exist.
-
-2. When adding a new property to a knowledge YAML, always fill in: `path:` (component chain),
-   `authority:` (client/server/either), an AOB signature, and `discovery_status:`.
-
-3. Run `python framework/tools/reindex.py` after editing any entity or datatable YAML.
-   Never edit discovery_index.yml manually.
-
-4. Add properties to base class YAMLs (AActor, APawn) only. The resolver walks parent chains.
-   Do not duplicate inherited properties in child YAMLs.
-
-5. Modders read docs/api.md only. Knowledge YAMLs, grammar files, and framework internals are
-   not part of the public API and can change freely.
-
-6. ASCII only in AGENTS.md at D:\. discovery_engine.ps1 may read it under Windows-1252.
