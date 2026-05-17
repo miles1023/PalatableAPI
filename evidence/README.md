@@ -12,7 +12,7 @@ Every finding's confidence level must be justifiable. This folder stores:
 
 ## Files
 
-- **game-versions.md** — Version history, binary hashes, known breaking changes, Mappings.usmap hashes per version
+- **game-versions.yml** — Version history, local installation mappings, binary hashes, known breaking changes, Mappings.usmap hashes per version
 - **source-log.md** — Running log of sources consulted per session
 
 ## Confidence levels
