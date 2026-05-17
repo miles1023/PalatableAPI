@@ -24,8 +24,7 @@ versions:
       app_id: 1623730
       branch: "public"
       buildid: "22461598"
-      branch_updated_utc: "2026-04-06T03:05:40Z"
-      source: "SteamCMD app_info_print 1623730 and local Steam appmanifest_1623730.acf observed 2026-05-17"
+      source: "Local Steam appmanifest_1623730.acf observed by controller"
     binaries:
       client: "Palworld-Win64-Shipping.exe"
       server: "PalServer-Win64-Shipping-Server.exe"
@@ -33,9 +32,9 @@ versions:
     status: partially_verified
     mappings_usmap_hash: null
     notes: >
-      Current roadmap target version. The local Steam install buildid matched the
-      current public branch on 2026-05-17. The branch match and local binary facts
-      were verified locally; broader version metadata has not been fully re-verified
+      Current roadmap target version. This repository currently has file-based
+      local evidence for Steam buildid 22461598 from the local appmanifest, plus
+      matching local install paths for the Steam installation. Broader version metadata has not been fully re-verified
       in this repository yet.
 
   - version: "1.0"
@@ -59,7 +58,6 @@ local_installations:
     app_id: 1623730
     branch: "public"
     buildid: "22461598"
-    public_branch_buildid_match: true
     install_root: 'C:\Program Files (x86)\Steam\steamapps\common\Palworld'
     client_executable: 'C:\Program Files (x86)\Steam\steamapps\common\Palworld\Pal\Binaries\Win64\Palworld-Win64-Shipping.exe'
     steam_appmanifest: 'C:\Program Files (x86)\Steam\steamapps\appmanifest_1623730.acf'
@@ -67,20 +65,17 @@ local_installations:
     client_sha256: "B5C73EF10B942CED2101131F35A03123AF53892C0167FB3E9642D66FE49948B6"
     client_size_bytes: 155380224
     manifest_last_played_utc: "2026-05-15T20:55:57Z"
-    launch_check:
-      performed_utc: "2026-05-17T04:59:41Z"
-      method: "Started Palworld-Win64-Shipping.exe locally and confirmed a stable, responsive game window after 90 seconds"
-      result: "launch_verified"
-      process_responding: true
-      main_menu_directly_observed: false
-      visible_windows:
-        - "Pal  "
-        - 'C:\Program Files (x86)\Steam\steamapps\common\Palworld\Pal\Binaries\Win64\Palworld-Win64-Shipping.exe'
+    evidence_scope:
+      method: "file_only"
+      install_root_exists: true
+      client_executable_exists: true
+      steam_appmanifest_exists: true
+      save_root_exists: true
+      main_menu_confirmed: false
       notes: >
-        A stable game window was present after launch. This automation session
-        could not directly read the game screen, so a human still needs to look
-        at the screen once and confirm the main menu appears cleanly before
-        task 1.1 is treated as fully complete.
+        This mapping intentionally records only already-known local filesystem
+        and Steam appmanifest facts. No launch or runtime check is included in
+        this file-only pass.
 
 todo:
   - "Add Mappings.usmap SHA256 hash for each version when obtained"
