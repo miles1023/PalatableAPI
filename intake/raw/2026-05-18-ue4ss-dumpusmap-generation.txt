@@ -1,0 +1,23 @@
+Tool: UE4SS DumpUSMAP via temporary startup mod
+Topic: runtime-generated usmap for local Palworld 0.7.3 research setup
+
+Temp log:
+2026-05-18 04:52:54 dump_start
+2026-05-18 04:52:54 dump_called
+
+Generated file:
+Path      : C:\Program Files (x86)\Steam\steamapps\common\Palworld\Pal\Binaries\Win64\ue4ss\Pal-5.1.1-0+++UE5+Release-5.1-486806a.usmap
+Length    : 2183690
+SHA256    : 8F85BD27CDF9CEA8525EF01F0E0B567E958DAF576F26263185F5444D459A2AE7
+WrittenAt : 2026-05-18T09:52:54.7466117Z
+
+Existing FModel copy at capture time:
+Path      : D:\Tools\FModel\Mappings.usmap
+Length    : 2195972
+SHA256    : 4282CD41EC3AFBD22E183908FEEB68665E6B17888A5097AEC31CBC739B0864A2
+WrittenAt : 2026-05-17T06:10:31.8295568Z
+
+Observation:
+- UE4SS successfully invoked DumpUSMAP at startup.
+- The generated file name is versioned, not plain Mappings.usmap.
+- The live-generated hash does not match the older FModel copy.

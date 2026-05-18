@@ -30,12 +30,17 @@ versions:
       server: "PalServer-Win64-Shipping-Server.exe"
     breaking_changes: []
     status: partially_verified
-    mappings_usmap_hash: null
+    mappings_usmap_hash: "8F85BD27CDF9CEA8525EF01F0E0B567E958DAF576F26263185F5444D459A2AE7"
     notes: >
       Current roadmap target version. This repository currently has file-based
       local evidence for Steam buildid 22461598 from the local appmanifest, plus
-      matching local install paths for the Steam installation. Broader version metadata has not been fully re-verified
-      in this repository yet.
+      matching local install paths for the Steam installation. UE4SS DumpUSMAP was also
+      executed successfully at runtime and generated
+      C:\Program Files (x86)\Steam\steamapps\common\Palworld\Pal\Binaries\Win64\ue4ss\Pal-5.1.1-0+++UE5+Release-5.1-486806a.usmap
+      with SHA256 8F85BD27CDF9CEA8525EF01F0E0B567E958DAF576F26263185F5444D459A2AE7.
+      An older local FModel copy at D:\Tools\FModel\Mappings.usmap has a different hash
+      (4282CD41EC3AFBD22E183908FEEB68665E6B17888A5097AEC31CBC739B0864A2) and should not
+      be treated as the current verified 0.7.3 mapping until replaced.
 
   - version: "1.0"
     release_date: "2026-TBD"
@@ -52,7 +57,7 @@ versions:
 
 local_installations:
   - machine: "local-windows-pc"
-    observed_utc: "2026-05-17T05:06:06Z"
+    observed_utc: "2026-05-18T09:52:54Z"
     version: "0.7.3"
     store: "Steam"
     app_id: 1623730
@@ -62,22 +67,29 @@ local_installations:
     client_executable: 'C:\Program Files (x86)\Steam\steamapps\common\Palworld\Pal\Binaries\Win64\Palworld-Win64-Shipping.exe'
     steam_appmanifest: 'C:\Program Files (x86)\Steam\steamapps\appmanifest_1623730.acf'
     save_root: 'C:\Users\bmile\AppData\Local\Pal\Saved'
+    mappings_usmap_path: 'C:\Program Files (x86)\Steam\steamapps\common\Palworld\Pal\Binaries\Win64\ue4ss\Pal-5.1.1-0+++UE5+Release-5.1-486806a.usmap'
+    mappings_usmap_sha256: "8F85BD27CDF9CEA8525EF01F0E0B567E958DAF576F26263185F5444D459A2AE7"
+    mappings_usmap_size_bytes: 2183690
+    community_mappings_usmap_path: 'D:\Tools\FModel\Mappings.usmap'
+    community_mappings_usmap_sha256: "4282CD41EC3AFBD22E183908FEEB68665E6B17888A5097AEC31CBC739B0864A2"
+    community_mappings_usmap_size_bytes: 2195972
     client_sha256: "B5C73EF10B942CED2101131F35A03123AF53892C0167FB3E9642D66FE49948B6"
     client_size_bytes: 155380224
     manifest_last_played_utc: "2026-05-15T20:55:57Z"
     evidence_scope:
-      method: "file_only"
+      method: "runtime_plus_file"
       install_root_exists: true
       client_executable_exists: true
       steam_appmanifest_exists: true
       save_root_exists: true
       main_menu_confirmed: false
+      runtime_launch_confirmed: true
       notes: >
-        This mapping intentionally records only already-known local filesystem
-        and Steam appmanifest facts. No launch or runtime check is included in
-        this file-only pass.
+        Local filesystem facts remain verified. This entry now also includes a live
+        UE4SS DumpUSMAP run that produced a versioned .usmap artifact. The older
+        community FModel copy present on disk does not hash-match the live-generated file.
 
 todo:
-  - "Add Mappings.usmap SHA256 hash for each version when obtained"
+  - "Add Mappings.usmap SHA256 hash for older and future versions when obtained"
   - "Track UE4SS Okaetsu fork release that supports each game version"
   - "Add binary file hashes (SHA256) for client and server exe per version"

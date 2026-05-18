@@ -13,12 +13,18 @@ FModel + Mappings.usmap — Unreal Engine asset browser (read-only research tool
 
 1. Download FModel
 2. Point it at Palworld game directory
-3. Download current Mappings.usmap from: github.com/PalworldModding/UsefulFiles
-4. Load Mappings.usmap in FModel settings
+3. Prefer a live UE4SS DumpUSMAP output for the current game build when available
+4. If no live dump exists yet, download a current community Mappings.usmap from: github.com/PalworldModding/UsefulFiles
+5. Load the verified mapping file in FModel settings
 
 ## Version dependency
 
 Mappings.usmap must match the current game version. When the game updates, wait for the community to update Mappings.usmap before running FModel.
+
+For the current local 0.7.3 research setup, UE4SS generated
+`Pal-5.1.1-0+++UE5+Release-5.1-486806a.usmap` with SHA256
+`8F85BD27CDF9CEA8525EF01F0E0B567E958DAF576F26263185F5444D459A2AE7`.
+The older local FModel copy at `D:\Tools\FModel\Mappings.usmap` hashed differently and should be treated as stale until replaced.
 
 ## What it does NOT do
 

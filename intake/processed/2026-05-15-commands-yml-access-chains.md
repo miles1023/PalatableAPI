@@ -13,15 +13,15 @@ and community UE4SS mods. Game version: 0.7.1.
 
 | Property | Entity | Field | Access Chain | Value Type | Notes |
 |----------|--------|-------|--------------|------------|-------|
-| HP (player) | UPalIndividualCharacterParameter | Hp | CharacterParameterComponent → IndividualParameter | FFixedPoint | inner field unconfirmed |
-| MaxHP (player) | UPalIndividualCharacterParameter | MaxHP | CharacterParameterComponent → IndividualParameter | FFixedPoint | inner field unconfirmed |
+| HP (player) | UPalIndividualCharacterParameter | Hp | CharacterParameterComponent → IndividualParameter | FFixedPoint64 | live 0.7.3 UE4SS CXX dump: inner field is Value (int64) |
+| MaxHP (player) | UPalIndividualCharacterParameter | MaxHP | CharacterParameterComponent → IndividualParameter | FFixedPoint64 | live 0.7.3 UE4SS CXX dump: inner field is Value (int64) |
 | Hunger/FullStomach | UPalIndividualCharacterParameter | FullStomach | CharacterParameterComponent → IndividualParameter | float | |
 | Sanity | UPalIndividualCharacterParameter | SanityValue | CharacterParameterComponent → IndividualParameter | float | range: 0.0–100.0 |
 | Invincible | UPalCharacterParameterComponent | bIsEnableMuteki | CharacterParameterComponent | bool | |
 | Walk Speed | UPalCharacterMovementComponent | MaxWalkSpeed | CharacterMovement | float | default: 600.0 |
 | Max Carry Weight | UPalPlayerInventoryData | MaxInventoryWeight | Controller → PlayerState → InventoryData | float | |
-| HP (pal) | UPalIndividualCharacterParameter | Hp | CharacterParameterComponent → IndividualParameter | FFixedPoint | same as player |
-| MaxHP (pal) | UPalIndividualCharacterParameter | MaxHP | CharacterParameterComponent → IndividualParameter | FFixedPoint | same as player |
+| HP (pal) | UPalIndividualCharacterParameter | Hp | CharacterParameterComponent → IndividualParameter | FFixedPoint64 | same as player; live 0.7.3 UE4SS CXX dump shows Value (int64) |
+| MaxHP (pal) | UPalIndividualCharacterParameter | MaxHP | CharacterParameterComponent → IndividualParameter | FFixedPoint64 | same as player; live 0.7.3 UE4SS CXX dump shows Value (int64) |
 | Hunger (pal) | UPalIndividualCharacterParameter | FullStomach | CharacterParameterComponent → IndividualParameter | float | |
 | Sanity (pal) | UPalIndividualCharacterParameter | SanityValue | CharacterParameterComponent → IndividualParameter | float | range: 0.0–100.0 |
 
@@ -112,3 +112,13 @@ These findings have been read and recorded here. Next step: process each row thr
 the ingestion pipeline (workflow/PIPELINE.md) and write canonical finding files.
 The access chain rows go into systems/player-character/ and systems/pal-character/.
 The DataTable columns go into the relevant systems/ folder per table.
+
+Superseded note (2026-05-18): the live 0.7.3 UE4SS CXX dump at
+`Pal/Binaries/Win64/ue4ss/CXXHeaderDump/Pal.hpp` shows that the HP-family fields on
+`UPalIndividualCharacterParameter` are `FFixedPoint64`, and the inner member name is
+`Value` rather than `RawValue`.
+
+Additional runtime note (2026-05-18): a repeated live player probe measured `hp_raw=900000`
+while `UPalIndividualCharacterParameter::GetMaxHP()` returned `900` in the same session,
+which strongly supports `1000` raw units per `1` whole-number HP unit for player HP-family
+values.

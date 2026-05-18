@@ -1,0 +1,40 @@
+Source: C:\Program Files (x86)\Steam\steamapps\common\Palworld\Pal\Binaries\Win64\ue4ss\CXXHeaderDump\Pal.hpp
+
+struct FFixedPoint
+{
+    int32 Value;                                                                      // 0x0000 (size: 0x4)
+
+}; // Size: 0x4
+
+struct FFixedPoint64
+{
+    int64 Value;                                                                      // 0x0000 (size: 0x8)
+
+}; // Size: 0x8
+
+    FFixedPoint64 Hp;                                                                 // 0x0078 (size: 0x8)
+    uint8 Talent_HP;                                                                  // 0x0080 (size: 0x1)
+    uint8 Talent_Melee;                                                               // 0x0081 (size: 0x1)
+    uint8 Talent_Shot;                                                                // 0x0082 (size: 0x1)
+    uint8 Talent_Defense;                                                             // 0x0083 (size: 0x1)
+    float FullStomach;                                                                // 0x0084 (size: 0x4)
+    EPalStatusPhysicalHealthType PhysicalHealth;                                      // 0x0088 (size: 0x1)
+    EPalBaseCampWorkerSickType WorkerSick;                                            // 0x0089 (size: 0x1)
+    TArray<FName> PassiveSkillList;                                                   // 0x0090 (size: 0x10)
+    int32 DyingTimer;                                                                 // 0x00A0 (size: 0x4)
+    FFixedPoint64 MP;                                                                 // 0x00A8 (size: 0x8)
+    bool IsPlayer;                                                                    // 0x00B0 (size: 0x1)
+    FDateTime OwnedTime;                                                              // 0x00B8 (size: 0x8)
+    FGuid OwnerPlayerUId;                                                             // 0x00C0 (size: 0x10)
+    TArray<FGuid> OldOwnerPlayerUIds;                                                 // 0x00D0 (size: 0x10)
+    FFixedPoint64 MaxHP;                                                              // 0x00E0 (size: 0x8)
+    int32 Support;                                                                    // 0x00E8 (size: 0x4)
+    int32 CraftSpeed;                                                                 // 0x00EC (size: 0x4)
+    TArray<FPalWorkSuitabilityInfo> CraftSpeeds;                                      // 0x00F0 (size: 0x10)
+    FFixedPoint64 ShieldHP;                                                           // 0x0100 (size: 0x8)
+    FFixedPoint64 ShieldMaxHP;                                                        // 0x0108 (size: 0x8)
+    bool bApplyShieldDamage;                                                          // 0x0110 (size: 0x1)
+    FFixedPoint64 MaxMP;                                                              // 0x0118 (size: 0x8)
+    FFixedPoint64 MaxSP;                                                              // 0x0120 (size: 0x8)
+    EPalStatusHungerType HungerType;                                                  // 0x0128 (size: 0x1)
+    float SanityValue;                                                                // 0x012C (size: 0x4)

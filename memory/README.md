@@ -31,4 +31,6 @@ All findings about Palworld's memory layout.
 
 ## Critical open finding
 
-FFixedPoint is used for HP on both player and Pal characters. The inner field that holds the actual float value is not yet confirmed: `.Value` or `.RawValue`? This blocks all stat modification. Use x64dbg to set a breakpoint on an HP read and inspect the struct layout.
+Resolved on 2026-05-18 via the live UE4SS CXX dump in `Pal.hpp`: `FFixedPoint` has a single `int32 Value` field and `FFixedPoint64` has a single `int64 Value` field. `UPalIndividualCharacterParameter` uses `FFixedPoint64` for HP-family fields, so the old `.RawValue` and float assumptions should be treated as stale.
+
+Additional live runtime evidence from 2026-05-18: the in-game UE4SS probe repeatedly measured `hp_raw=900000` while `UPalIndividualCharacterParameter::GetMaxHP()` returned `900`, which strongly supports a `1000:1` raw-to-whole-number scale for player HP-family `FFixedPoint64.Value` data.

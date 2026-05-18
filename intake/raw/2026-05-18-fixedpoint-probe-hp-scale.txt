@@ -1,0 +1,9 @@
+Source: C:\Users\bmile\AppData\Local\Temp\fixedpoint_probe.txt
+Tool: UE4SS Lua probe (FixedPointProbe)
+Game version: 0.7.3
+Trigger: F6 in live player session
+
+2026-05-18 04:41:48 probe_trigger=f6
+2026-05-18 04:41:48 player=BP_Player_Female_C /Game/Pal/Maps/MainWorld_5/PL_MainWorld5.PL_MainWorld5:PersistentLevel.BP_Player_Female_C_2147481253 individual=PalIndividualCharacterParameter /Game/Pal/Maps/MainWorld_5/PL_MainWorld5.PL_MainWorld5:PersistentLevel.BP_PalGameStateInGame_C_2147481370.PalCharacterManagerReplicator_2147481368.PalIndividualCharacterParameter_2147481117 hp_raw=900000 hp_raw_type=number max_hp_raw=0 max_hp_raw_type=number hp_display=-1 hp_display_type=number max_hp_display=900 max_hp_display_type=number hp_rate=0.99900007247925 hp_rate_type=number hp_rate_source=parameter_component ratio=-900000.0 div100=9000.0 div1000=900.0 div10000=90.0 db=BP_PalDatabaseCharacterParameter_C /Engine/Transient.PalGameEngine_2147482594:BP_PalGameInstance_C_2147482491.BP_PalDatabaseCharacterParameter_C_2147482268
+2026-05-18 04:42:42 probe_trigger=f6
+2026-05-18 04:42:43 player=BP_Player_Female_C /Game/Pal/Maps/MainWorld_5/PL_MainWorld5.PL_MainWorld5:PersistentLevel.BP_Player_Female_C_2147481253 individual=PalIndividualCharacterParameter /Game/Pal/Maps/MainWorld_5/PL_MainWorld5.PL_MainWorld5:PersistentLevel.BP_PalGameStateInGame_C_2147481370.PalCharacterManagerReplicator_2147481368.PalIndividualCharacterParameter_2147481117 hp_raw=900000 hp_raw_type=number max_hp_raw=0 max_hp_raw_type=number hp_display=-1 hp_display_type=number max_hp_display=900 max_hp_display_type=number hp_rate=0.99900007247925 hp_rate_type=number hp_rate_source=parameter_component ratio=-900000.0 div100=9000.0 div1000=900.0 div10000=90.0 db=BP_PalDatabaseCharacterParameter_C /Engine/Transient.PalGameEngine_2147482594:BP_PalGameInstance_C_2147482491.BP_PalDatabaseCharacterParameter_C_2147482268

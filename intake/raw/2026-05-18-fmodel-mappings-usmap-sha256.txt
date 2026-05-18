@@ -1,0 +1,10 @@
+Tool: local filesystem hash check
+Topic: FModel Mappings.usmap proof for current local 0.7.3 research setup
+
+Algorithm : SHA256
+Hash      : 4282CD41EC3AFBD22E183908FEEB68665E6B17888A5097AEC31CBC739B0864A2
+Path      : D:\Tools\FModel\Mappings.usmap
+
+FullName      : D:\Tools\FModel\Mappings.usmap
+Length        : 2195972
+LastWriteTime : 2026-05-17 01:10:31
