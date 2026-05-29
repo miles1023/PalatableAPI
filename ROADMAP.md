@@ -1,8 +1,31 @@
-# PALWORLD MODDING FRAMEWORK — COMPLETE PROJECT PLAN
+# ROADMAP.md
 
-> **Status:** Final consolidated plan. All information verified against live sources as of May 16, 2026.
-> **Purpose:** This document is the single source of truth for building a BakkesMod-style modding framework for Palworld. It covers everything from a vanilla game installation through a fully published, update-resilient API covering every moddable system in the game.
-> **Audience:** AI coding agent. All coding is AI-generated. The project owner is non-technical.
+## Status (what is “current” right now)
+
+This repository is currently in the **Reverse Engineering** phase. The immediate goal is to build a
+reliable map of how the game works internally (memory, events, hooks, data tables), and to store that
+map in a consistent way so nothing gets lost.
+
+Practical “what to do next” lives in `NEXT_SESSION.md`.
+
+The long “build a full modding framework + API” plan from May 2026 is still kept here for historical
+context, but it is **not** the day-to-day source of truth anymore.
+
+---
+
+## Current roadmap (Reverse Engineering map)
+
+1. Follow the session pipeline in `workflow/PIPELINE.md` so raw tool output becomes durable findings.
+2. Work priorities are in `NEXT_SESSION.md` (pick one, finish it, write a session note).
+3. Keep `future-api/` empty until the map is complete and explicitly signed off.
+
+---
+
+# ARCHIVE (May 2026) — PALWORLD MODDING FRAMEWORK — COMPLETE PROJECT PLAN
+
+> **Status:** Historical plan kept for context. It may be outdated or no longer aligned with how this repo is organized today.
+> **Purpose (historical):** A single plan for building a modding framework + API.
+> **Audience (historical):** AI coding agent. The project owner is non-technical.
 
 ---
 
