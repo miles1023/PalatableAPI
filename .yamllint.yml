@@ -1,0 +1,42 @@
+# .yamllint.yml — YAML lint configuration for PalatableAPI
+#
+# This configuration is intentionally permissive on line length and comment
+# style to match the project's existing YAML files, while still catching
+# genuine syntax errors and structural problems.
+
+extends: default
+
+rules:
+  # Project YAML files contain long inline notes and evidence strings.
+  line-length:
+    max: 200
+    level: warning
+
+  # Comment lines starting with multiple '#' characters are used throughout
+  # (e.g., '# ---', '# This file ...'). Allow any number of spaces after '#'.
+  comments:
+    min-spaces-from-content: 1
+
+  # Truthy values (e.g., `status: verified`) appear without quoting.
+  truthy:
+    allowed-values: ['true', 'false', 'yes', 'no']
+    check-keys: false
+
+  # Allow document start markers (`---`) to be absent.
+  document-start: disable
+
+  # Some YAML files use block scalars for multi-line notes.
+  # Allow mixed indentation within block scalars.
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+
+  # Allow empty lines at end of files.
+  empty-lines:
+    max: 2
+    max-start: 0
+    max-end: 1
+
+  # Do not require or forbid document-end markers.
+  document-end: disable

@@ -1,0 +1,68 @@
+# .markdownlint.yml — Markdown lint configuration for PalatableAPI
+#
+# This project's documentation uses a style that intentionally differs from
+# strict CommonMark conventions (e.g., top-level H1s in schema files that
+# act as file headers rather than document titles, long inline code blocks,
+# and mixed heading styles). The rules below enforce correctness while
+# permitting the established conventions.
+
+default: true
+
+# Allow multiple top-level headings — schema and pipeline files use the first
+# H1 as a file-header comment, not as a document section boundary.
+MD025: false
+
+# Allow long lines — evidence tables and technical details can be wide.
+MD013: false
+
+# Allow inline HTML — not used, but disabling avoids false positives.
+MD033: false
+
+# Allow bare URLs in reference tables (sources-2026.md style).
+MD034: false
+
+# Allow duplicate headings — some files repeat section names intentionally
+# (e.g., multiple "## Description" headings in different finding examples).
+MD024: false
+
+# Allow emphasis used instead of a heading in informal notes.
+MD036: false
+
+# Allow ordered list items not to be in order — docs use 1. everywhere.
+MD029: false
+
+# Allow trailing punctuation in headings (e.g., "Phase 1 — COMPLETE").
+MD026: false
+
+# Allow first line not to be a top-level heading — YAML front-matter files
+# begin with "---" not a heading.
+MD041: false
+
+# Allow hard tabs in code blocks only.
+MD010:
+  code_blocks: false
+
+# Allow spaces inside code span backticks (PalAPI.Pals style).
+MD038: false
+
+# Allow headings not surrounded by blank lines — project files use consecutive
+# H1 comment-style headers at the top of files (e.g., CLAUDE.md, RULES.md).
+MD022: false
+
+# Allow fenced code blocks without blank lines around them — docs frequently
+# include code blocks inside tight list items and table cells.
+MD031: false
+
+# Allow lists not surrounded by blank lines — project docs use tight lists.
+MD032: false
+
+# Allow fenced code blocks without a language specifier — many blocks contain
+# pseudo-code, shell paths, or YAML snippets not tied to a specific language.
+MD040: false
+
+# Allow files not ending with a single newline — not enforced in this project.
+MD047: false
+
+# Allow mixed table column alignment styles — project files use both compact
+# and aligned table formats.
+MD060: false
