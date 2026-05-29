@@ -1,0 +1,24 @@
+name: Snapshot Artifact
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create snapshot archive
+        run: tar -czf palatableapi-snapshot.tar.gz --exclude-vcs .
+
+      - name: Upload snapshot artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: palatableapi-snapshot
+          path: palatableapi-snapshot.tar.gz
+
