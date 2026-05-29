@@ -1,0 +1,226 @@
+name: Consistency and Logic Validation
+
+on:
+  push:
+    branches: [ main, claude/* ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  check-consistency:
+    name: Check Project Consistency
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Cross-reference validation
+        run: |
+          python3 << 'EOF'
+          import yaml
+          from pathlib import Path
+          import re
+          from collections import defaultdict
+
+          root = Path('/home/runner/work/PalatableAPI/PalatableAPI')
+
+          # Load all systems
+          systems_dir = root / 'systems'
+          valid_systems = set()
+          for sys_dir in systems_dir.iterdir():
+              if sys_dir.is_dir() and sys_dir.name != 'README.md':
+                  valid_systems.add(sys_dir.name)
+
+          # Load all surfaces
+          surfaces_dir = root / 'surfaces'
+          valid_surfaces = set()
+          for surf_dir in surfaces_dir.iterdir():
+              if surf_dir.is_dir() and surf_dir.name != 'README.md':
+                  valid_surfaces.add(surf_dir.name)
+
+          print(f"Found {len(valid_systems)} game systems")
+          print(f"Found {len(valid_surfaces)} modding surfaces")
+
+          # Check findings for valid system/surface references
+          issues = []
+          for md_file in root.glob('findings/**/*.md'):
+              if md_file.name == 'README.md' or 'pre-migration' in str(md_file):
+                  continue
+
+              try:
+                  content = md_file.read_text(encoding='utf-8')
+                  match = re.match(r'^---\s*\n(.*?)\n---', content, re.DOTALL)
+                  if not match:
+                      continue
+
+                  frontmatter = yaml.safe_load(match.group(1))
+                  if not frontmatter:
+                      continue
+
+                  # Check game_system reference
+                  game_system = frontmatter.get('game_system')
+                  if game_system and game_system != 'unknown' and game_system not in valid_systems:
+                      issues.append(f"{md_file.relative_to(root)}: Invalid game_system '{game_system}'")
+
+                  # Check surface reference
+                  surface = frontmatter.get('surface')
+                  if surface and surface not in valid_surfaces:
+                      issues.append(f"{md_file.relative_to(root)}: Invalid surface '{surface}'")
+
+              except Exception as e:
+                  print(f"::warning::Could not validate {md_file}: {e}")
+
+          if issues:
+              print(f"\n::error::Found {len(issues)} cross-reference issues:")
+              for issue in issues:
+                  print(f"  {issue}")
+              exit(1)
+          else:
+              print("✓ All cross-references are valid")
+          EOF
+
+      - name: Check for duplicate findings
+        run: |
+          python3 << 'EOF'
+          from pathlib import Path
+          from collections import defaultdict
+          import re
+          import yaml
+
+          root = Path('/home/runner/work/PalatableAPI/PalatableAPI')
+
+          # Track findings by name
+          findings_by_name = defaultdict(list)
+
+          for md_file in root.glob('findings/**/*.md'):
+              if md_file.name == 'README.md' or 'pre-migration' in str(md_file):
+                  continue
+
+              try:
+                  content = md_file.read_text(encoding='utf-8')
+                  match = re.match(r'^---\s*\n(.*?)\n---', content, re.DOTALL)
+                  if not match:
+                      continue
+
+                  frontmatter = yaml.safe_load(match.group(1))
+                  if not frontmatter:
+                      continue
+
+                  name = frontmatter.get('name')
+                  if name:
+                      findings_by_name[name].append(md_file.relative_to(root))
+
+              except Exception as e:
+                  pass
+
+          duplicates = {name: files for name, files in findings_by_name.items() if len(files) > 1}
+
+          if duplicates:
+              print(f"::warning::Found {len(duplicates)} potentially duplicate findings:")
+              for name, files in list(duplicates.items())[:10]:
+                  print(f"  '{name}' appears in:")
+                  for f in files:
+                      print(f"    - {f}")
+              if len(duplicates) > 10:
+                  print(f"  ... and {len(duplicates) - 10} more duplicates")
+          else:
+              print("✓ No duplicate findings detected")
+          EOF
+
+      - name: Verify session continuity
+        run: |
+          python3 << 'EOF'
+          from pathlib import Path
+          from datetime import datetime
+
+          root = Path('/home/runner/work/PalatableAPI/PalatableAPI')
+          sessions_dir = root / 'sessions'
+
+          session_files = sorted(
+              [f for f in sessions_dir.glob('*.md') if f.name != 'README.md'],
+              key=lambda x: x.stem
+          )
+
+          if not session_files:
+              print("::warning::No session files found")
+          else:
+              print(f"Found {len(session_files)} session files")
+              latest = session_files[-1]
+              print(f"Latest session: {latest.name}")
+
+              # Check if latest session is very old (more than 30 days)
+              try:
+                  session_date = datetime.strptime(latest.stem, '%Y-%m-%d')
+                  days_old = (datetime.now() - session_date).days
+                  if days_old > 30:
+                      print(f"::warning::Latest session is {days_old} days old - consider documenting recent work")
+              except:
+                  pass
+          EOF
+
+  check-roadmap-alignment:
+    name: Verify Roadmap Alignment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check roadmap vs current state
+        run: |
+          python3 << 'EOF'
+          from pathlib import Path
+          import re
+
+          root = Path('/home/runner/work/PalatableAPI/PalatableAPI')
+
+          # Read ROADMAP.md to understand what phase we should be in
+          roadmap = (root / 'ROADMAP.md').read_text()
+
+          # Check if we have session notes indicating where we are
+          sessions_dir = root / 'sessions'
+          session_files = sorted(
+              [f for f in sessions_dir.glob('*.md') if f.name != 'README.md'],
+              key=lambda x: x.stem
+          )
+
+          if session_files:
+              latest_session = session_files[-1].read_text()
+              print(f"Latest session file: {session_files[-1].name}")
+
+              # Look for phase indicators
+              if 'Phase 0' in latest_session or 'scaffolding' in latest_session.lower():
+                  print("Current phase appears to be: Phase 0-1 (Scaffolding/Foundation)")
+              elif 'Phase 2' in latest_session or 'mapping' in latest_session.lower():
+                  print("Current phase appears to be: Phase 2 (Game Mapping & Recon)")
+              elif 'Phase 3' in latest_session:
+                  print("Current phase appears to be: Phase 3 (Core API Build)")
+              else:
+                  print("::warning::Could not determine current phase from session notes")
+
+          # Check if critical directories are empty (indicates early phase)
+          findings_dir = root / 'findings'
+          finding_count = len([f for f in findings_dir.rglob('*.md') if f.name != 'README.md'])
+
+          hooks_confirmed = root / 'hooks' / 'confirmed'
+          confirmed_hooks = len([f for f in hooks_confirmed.rglob('*.md') if f.name != 'README.md'])
+
+          print(f"\nCurrent state indicators:")
+          print(f"  - {finding_count} finding files in findings/ directory")
+          print(f"  - {confirmed_hooks} confirmed hook files")
+
+          if finding_count == 0 and confirmed_hooks == 0:
+              print("\n✓ Project appears to be in early scaffolding phase (pre-RE work)")
+          else:
+              print(f"\n✓ Project has {finding_count} findings documented")
+          EOF
