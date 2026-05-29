@@ -1,0 +1,304 @@
+name: Documentation Validation
+
+on:
+  push:
+    branches: [ main, claude/* ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate-markdown:
+    name: Validate Markdown Files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install markdownlint-cli
+        run: npm install -g markdownlint-cli
+
+      - name: Run markdownlint
+        run: |
+          # Run markdownlint with lenient rules suitable for technical documentation
+          markdownlint '**/*.md' \
+            --ignore 'unknowns/UE4SSforCONTEXTonly/**' \
+            --disable MD013 MD033 MD041 MD046 \
+            || echo "::warning::Some markdown style issues found, but not failing build"
+
+      - name: Check for broken internal links
+        run: |
+          echo "Checking for broken internal markdown links..."
+          python3 << 'EOF'
+          import os
+          import re
+          from pathlib import Path
+
+          root = Path('/home/runner/work/PalatableAPI/PalatableAPI')
+          broken_links = []
+
+          def check_file(md_file):
+              content = md_file.read_text(errors='ignore')
+              # Match markdown links: [text](path)
+              links = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', content)
+
+              for text, link in links:
+                  # Skip external URLs
+                  if link.startswith(('http://', 'https://', 'ftp://', 'mailto:')):
+                      continue
+                  # Skip anchors
+                  if link.startswith('#'):
+                      continue
+
+                  # Resolve relative path
+                  link_path = link.split('#')[0]  # Remove anchor
+                  if not link_path:
+                      continue
+
+                  target = (md_file.parent / link_path).resolve()
+
+                  if not target.exists():
+                      broken_links.append(f"{md_file.relative_to(root)}: [{text}]({link})")
+
+          # Check all markdown files except third-party content
+          for md_file in root.rglob('*.md'):
+              if 'UE4SSforCONTEXTonly' in str(md_file):
+                  continue
+              check_file(md_file)
+
+          if broken_links:
+              print("::warning::Found broken internal links:")
+              for link in broken_links[:20]:  # Limit output
+                  print(f"  {link}")
+              if len(broken_links) > 20:
+                  print(f"  ... and {len(broken_links) - 20} more")
+          else:
+              print("✓ No broken internal links found")
+          EOF
+
+  validate-yaml:
+    name: Validate YAML Files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Validate YAML syntax
+        run: |
+          python3 << 'EOF'
+          import yaml
+          from pathlib import Path
+
+          root = Path('/home/runner/work/PalatableAPI/PalatableAPI')
+          errors = []
+          success_count = 0
+
+          for yaml_file in root.rglob('*.yml'):
+              # Skip third-party content
+              if 'UE4SSforCONTEXTonly' in str(yaml_file):
+                  continue
+              if '.github/workflows' in str(yaml_file):
+                  continue  # GitHub Actions workflows validated separately
+
+              try:
+                  with open(yaml_file, 'r', encoding='utf-8') as f:
+                      yaml.safe_load(f)
+                  success_count += 1
+              except yaml.YAMLError as e:
+                  errors.append(f"{yaml_file.relative_to(root)}: {e}")
+
+          print(f"✓ Validated {success_count} YAML files successfully")
+
+          if errors:
+              print("\n::error::YAML validation errors found:")
+              for error in errors:
+                  print(f"  {error}")
+              exit(1)
+          EOF
+
+  validate-finding-schema:
+    name: Validate Finding Schema Compliance
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Validate finding files against schema
+        run: |
+          python3 << 'EOF'
+          import yaml
+          from pathlib import Path
+          import re
+
+          root = Path('/home/runner/work/PalatableAPI/PalatableAPI')
+
+          # Required fields per FINDING_SCHEMA.md
+          required_fields = {
+              'type', 'name', 'description', 'game_system',
+              'surface', 'source', 'confidence', 'status'
+          }
+
+          valid_types = {
+              'memory-offset', 'ue-property', 'function', 'hook-point',
+              'struct', 'event', 'system', 'datatable-column',
+              'datatable-row', 'enum', 'enum-value', 'interface',
+              'constraint', 'unknown'
+          }
+
+          valid_confidence = {'confirmed', 'inferred', 'speculated'}
+          valid_status = {'raw', 'parsed', 'mapped', 'reviewed', 'complete'}
+
+          warnings = []
+          errors = []
+          validated_count = 0
+
+          # Check finding files (markdown with YAML frontmatter)
+          for md_file in root.glob('findings/**/*.md'):
+              if md_file.name == 'README.md':
+                  continue
+              if 'pre-migration' in str(md_file):
+                  continue  # Pre-migration files use old format
+
+              try:
+                  content = md_file.read_text(encoding='utf-8')
+                  # Extract YAML frontmatter
+                  match = re.match(r'^---\s*\n(.*?)\n---', content, re.DOTALL)
+                  if not match:
+                      warnings.append(f"{md_file.relative_to(root)}: No YAML frontmatter found")
+                      continue
+
+                  frontmatter = yaml.safe_load(match.group(1))
+                  if not frontmatter:
+                      warnings.append(f"{md_file.relative_to(root)}: Empty frontmatter")
+                      continue
+
+                  # Check required fields
+                  missing = required_fields - set(frontmatter.keys())
+                  if missing:
+                      errors.append(f"{md_file.relative_to(root)}: Missing required fields: {missing}")
+
+                  # Validate field values
+                  if frontmatter.get('type') not in valid_types:
+                      warnings.append(f"{md_file.relative_to(root)}: Invalid type: {frontmatter.get('type')}")
+
+                  if frontmatter.get('confidence') not in valid_confidence:
+                      warnings.append(f"{md_file.relative_to(root)}: Invalid confidence: {frontmatter.get('confidence')}")
+
+                  if frontmatter.get('status') not in valid_status:
+                      warnings.append(f"{md_file.relative_to(root)}: Invalid status: {frontmatter.get('status')}")
+
+                  validated_count += 1
+
+              except Exception as e:
+                  errors.append(f"{md_file.relative_to(root)}: {e}")
+
+          print(f"✓ Validated {validated_count} finding files")
+
+          if warnings:
+              print(f"\n::warning::Found {len(warnings)} schema warnings:")
+              for w in warnings[:10]:
+                  print(f"  {w}")
+              if len(warnings) > 10:
+                  print(f"  ... and {len(warnings) - 10} more")
+
+          if errors:
+              print(f"\n::error::Found {len(errors)} schema errors:")
+              for e in errors:
+                  print(f"  {e}")
+              exit(1)
+          EOF
+
+  check-structure:
+    name: Verify Repository Structure
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify required directories exist
+        run: |
+          required_dirs=(
+            "survey"
+            "intake/raw"
+            "intake/processed"
+            "findings"
+            "systems"
+            "surfaces"
+            "memory/structs"
+            "memory/offsets"
+            "hooks/confirmed"
+            "hooks/candidates"
+            "relationships"
+            "unknowns"
+            "evidence"
+            "sessions"
+            "schemas"
+            "workflow"
+            "backlog"
+            "future-api"
+          )
+
+          missing=()
+          for dir in "${required_dirs[@]}"; do
+            if [ ! -d "$dir" ]; then
+              missing+=("$dir")
+            fi
+          done
+
+          if [ ${#missing[@]} -eq 0 ]; then
+            echo "✓ All required directories present"
+          else
+            echo "::error::Missing required directories: ${missing[*]}"
+            exit 1
+          fi
+
+      - name: Verify required root files exist
+        run: |
+          required_files=(
+            "CLAUDE.md"
+            "RULES.md"
+            "ROADMAP.md"
+            "schemas/FINDING_SCHEMA.md"
+            "workflow/PIPELINE.md"
+            "survey/SURFACES.md"
+            "survey/GAME_SYSTEMS.md"
+          )
+
+          missing=()
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              missing+=("$file")
+            fi
+          done
+
+          if [ ${#missing[@]} -eq 0 ]; then
+            echo "✓ All required root files present"
+          else
+            echo "::error::Missing required files: ${missing[*]}"
+            exit 1
+          fi

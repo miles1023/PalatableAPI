@@ -1,0 +1,121 @@
+name: External Link Validation
+
+on:
+  schedule:
+    # Run weekly on Mondays at 9am UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '**.md'
+      - 'evidence/sources-2026.md'
+
+jobs:
+  check-external-links:
+    name: Check External Links
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install requests
+        run: pip install requests
+
+      - name: Check external URLs
+        run: |
+          python3 << 'EOF'
+          import re
+          import requests
+          from pathlib import Path
+          from urllib.parse import urlparse
+          import time
+
+          root = Path('/home/runner/work/PalatableAPI/PalatableAPI')
+
+          # Collect all external URLs
+          urls_to_check = set()
+          url_sources = {}
+
+          for md_file in root.rglob('*.md'):
+              if 'UE4SSforCONTEXTonly' in str(md_file):
+                  continue
+
+              try:
+                  content = md_file.read_text(errors='ignore')
+                  # Match URLs in markdown links and plain text
+                  urls = re.findall(r'https?://[^\s\)]+', content)
+
+                  for url in urls:
+                      # Clean up trailing punctuation
+                      url = url.rstrip('.,;:)')
+                      urls_to_check.add(url)
+                      if url not in url_sources:
+                          url_sources[url] = []
+                      url_sources[url].append(md_file.relative_to(root))
+              except Exception as e:
+                  print(f"::warning::Could not read {md_file}: {e}")
+
+          print(f"Found {len(urls_to_check)} unique external URLs to check")
+
+          broken_urls = []
+          warnings = []
+          checked = 0
+
+          headers = {
+              'User-Agent': 'Mozilla/5.0 (compatible; PalatableAPI-LinkChecker/1.0)'
+          }
+
+          for url in sorted(urls_to_check):
+              try:
+                  # Rate limiting
+                  if checked > 0 and checked % 10 == 0:
+                      time.sleep(2)
+
+                  response = requests.head(url, headers=headers, timeout=10, allow_redirects=True)
+
+                  # Some sites don't support HEAD, try GET
+                  if response.status_code == 405:
+                      response = requests.get(url, headers=headers, timeout=10, allow_redirects=True)
+
+                  if response.status_code >= 400:
+                      sources = ', '.join(str(s) for s in url_sources[url][:3])
+                      broken_urls.append(f"{url} (HTTP {response.status_code}) - found in: {sources}")
+                  elif response.status_code >= 300:
+                      sources = ', '.join(str(s) for s in url_sources[url][:3])
+                      warnings.append(f"{url} (HTTP {response.status_code}) - found in: {sources}")
+
+                  checked += 1
+
+              except requests.RequestException as e:
+                  sources = ', '.join(str(s) for s in url_sources[url][:3])
+                  broken_urls.append(f"{url} ({type(e).__name__}) - found in: {sources}")
+              except Exception as e:
+                  print(f"::warning::Error checking {url}: {e}")
+
+          print(f"\n✓ Checked {checked} URLs")
+
+          if warnings:
+              print(f"\n::warning::Found {len(warnings)} URLs with redirects or warnings:")
+              for w in warnings[:10]:
+                  print(f"  {w}")
+              if len(warnings) > 10:
+                  print(f"  ... and {len(warnings) - 10} more")
+
+          if broken_urls:
+              print(f"\n::error::Found {len(broken_urls)} broken or unreachable URLs:")
+              for b in broken_urls[:20]:
+                  print(f"  {b}")
+              if len(broken_urls) > 20:
+                  print(f"  ... and {len(broken_urls) - 20} more")
+
+              # Don't fail the build for broken external links, just warn
+              print("\n::warning::External link check found issues but not failing build")
+          else:
+              print("✓ All checked URLs are accessible")
+          EOF
